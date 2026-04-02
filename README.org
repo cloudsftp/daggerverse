@@ -1,0 +1,4 @@
+#+title: Readme
+
+Collection of useful dagger functions
+
