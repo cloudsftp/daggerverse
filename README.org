@@ -1,4 +1,4 @@
-#+title: Readme
+#+title: Cloud's Dagger Functions
 
 Collection of useful dagger functions
 

@@ -1,0 +1,35 @@
+#+title: Merge Dirs
+
+A Dagger module for merging multiple directories into one.
+Does not support symlinks.
+
+⊙ Usage
+
+⊘ CLI Example
+
+#+begin_src shell
+dagger call -m github.com/cloudsftp/daggerverse/merge-dirs \
+    merge-directories --dirs dir1 --dirs dir2 --dirs dir3 \
+    export --path ./merged
+#+end_src
+
+⊘ Go Example
+
+⊖ Install the Module
+
+To use this module in your Dagger project, first install it:
+
+#+begin_src shell
+dagger install github.com/cloudsftp/daggerverse/merge-dirs@latest
+#+end_src
+
+This will add the module to your project's =dagger.json=.
+
+* Functions
+
+** merge-directories
+
+Merge multiple directories into one. Requires at least 2 directories.
+
+- Args ::
+  - =dirs= (required): Array of directories to merge
