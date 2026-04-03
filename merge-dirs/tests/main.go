@@ -52,34 +52,32 @@ func (m *MergeDirsTests) All(ctx context.Context) error {
 				},
 			},
 		},
-		/*
-			{
-				name: "conflicting files root, left",
-				dirs: []*dagger.Directory{
-					dag.Directory().
-						WithNewFile("a", "a").
-						WithNewFile("b", "b1"),
-					dag.Directory().
-						WithNewFile("b", "b2").
-						WithNewFile("c", "c"),
+		{
+			name: "conflicting files root, left",
+			dirs: []*dagger.Directory{
+				dag.Directory().
+					WithNewFile("a", "a").
+					WithNewFile("b", "b1"),
+				dag.Directory().
+					WithNewFile("b", "b2").
+					WithNewFile("c", "c"),
+			},
+			strategy: dagger.MergeDirsMergeConflictStrategyKeepLeft,
+			expected: []*ExpectedFile{
+				{
+					name:    "a",
+					content: "a",
 				},
-				strategy: dagger.MergeDirsMergeConflictStrategyKeepLeft,
-				expected: []*ExpectedFile{
-					{
-						name:    "a",
-						content: "a",
-					},
-					{
-						name:    "b",
-						content: "b1",
-					},
-					{
-						name:    "c",
-						content: "c",
-					},
+				{
+					name:    "b",
+					content: "b1",
+				},
+				{
+					name:    "c",
+					content: "c",
 				},
 			},
-		*/
+		},
 		{
 			name: "conflicting files root, right",
 			dirs: []*dagger.Directory{

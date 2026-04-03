@@ -142,10 +142,11 @@ func copyEntryLeftExists(
 		}
 
 	case KeepLeft:
-		return nil, fmt.Errorf("merge strategy keep left not yet implemented")
+		return left, nil
+
 	}
 
-	return nil, nil
+	return nil, fmt.Errorf("unknown strategy '%s'", strategy)
 }
 
 func assertAllowedFileType(fileType dagger.FileType) error {
