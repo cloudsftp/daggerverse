@@ -17,6 +17,7 @@ type ExpectedFile struct {
 type MergeDirectoriesTestCase struct {
 	name     string
 	dirs     []*dagger.Directory
+	strategy dagger.MergeDirsMergeConflictStrategy
 	expected []*ExpectedFile
 }
 
@@ -51,12 +52,90 @@ func (m *MergeDirsTests) All(ctx context.Context) error {
 				},
 			},
 		},
+		/*
+			{
+				name: "conflicting files root, left",
+				dirs: []*dagger.Directory{
+					dag.Directory().
+						WithNewFile("a", "a").
+						WithNewFile("b", "b1"),
+					dag.Directory().
+						WithNewFile("b", "b2").
+						WithNewFile("c", "c"),
+				},
+				strategy: dagger.MergeDirsMergeConflictStrategyKeepLeft,
+				expected: []*ExpectedFile{
+					{
+						name:    "a",
+						content: "a",
+					},
+					{
+						name:    "b",
+						content: "b1",
+					},
+					{
+						name:    "c",
+						content: "c",
+					},
+				},
+			},
+		*/
+		{
+			name: "conflicting files root, right",
+			dirs: []*dagger.Directory{
+				dag.Directory().
+					WithNewFile("a", "a").
+					WithNewFile("b", "b1"),
+				dag.Directory().
+					WithNewFile("b", "b2").
+					WithNewFile("c", "c"),
+			},
+			strategy: dagger.MergeDirsMergeConflictStrategyKeepRight,
+			expected: []*ExpectedFile{
+				{
+					name:    "a",
+					content: "a",
+				},
+				{
+					name:    "b",
+					content: "b2",
+				},
+				{
+					name:    "c",
+					content: "c",
+				},
+			},
+		},
+		/*
+			{
+				name: "merge nested directory",
+				dirs: []*dagger.Directory{
+					dag.Directory().
+						WithNewDirectory("dir").
+						WithNewFile("a", "a"),
+					dag.Directory().
+						WithNewDirectory("dir").
+						WithNewFile("b", "b"),
+				},
+				strategy: dagger.MergeDirsMergeConflictStrategyKeepRight,
+				expected: []*ExpectedFile{
+					{
+						name:    "dir/a",
+						content: "a",
+					},
+					{
+						name:    "dir/b",
+						content: "b",
+					},
+				},
+			},
+		*/
 	}
 
 	for _, test := range tests {
 		err := test.run(ctx)
 		if err != nil {
-			return fmt.Errorf("test case '%s' failed: %w", err)
+			return fmt.Errorf("test case '%s' failed: %w", test.name, err)
 		}
 	}
 
@@ -64,7 +143,12 @@ func (m *MergeDirsTests) All(ctx context.Context) error {
 }
 
 func (t *MergeDirectoriesTestCase) run(ctx context.Context) error {
-	merged := dag.MergeDirs().Merge(t.dirs)
+	merged := dag.MergeDirs().Merge(
+		t.dirs,
+		dagger.MergeDirsMergeOpts{
+			Strategy: t.strategy,
+		},
+	)
 	return assertEntries(ctx, merged, t.expected)
 }
 
