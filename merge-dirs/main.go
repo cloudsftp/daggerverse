@@ -7,22 +7,33 @@ import (
 	"dagger/merge-dirs/internal/dagger"
 )
 
+type MergeConflictStrategy string
+
+const (
+	KeepLeft        MergeConflictStrategy = "KEEP_LEFT"
+	KeepRight       MergeConflictStrategy = "KEEP_RIGHT"
+	ErrorOnConflict MergeConflictStrategy = "ERROR"
+)
+
 type MergeDirs struct{}
 
-// Merge multiple directories into one
-func (m *MergeDirs) MergeDirectories(
+// Merge merges multiple directories into one
+func (m *MergeDirs) Merge(
 	ctx context.Context,
 	dirs []*dagger.Directory,
+	// +default="KEEP_LEFT"
+	// Conflict resolution strategy: left (default), right, or error
+	strategy MergeConflictStrategy,
 ) (*dagger.Directory, error) {
 	if len(dirs) < 2 {
-		return nil, fmt.Errorf("need at least 2 directories to merge")
+		return nil, fmt.Errorf("need at least 2 directories to merge, got %d", len(dirs))
 	}
 
 	first, rest := dirs[0], dirs[1:]
 	var err error
 
 	for i, next := range rest {
-		first, err = mergeDirectories2(ctx, first, next)
+		first, err = mergeDirectories2(ctx, first, next, strategy)
 		if err != nil {
 			return nil, fmt.Errorf("could not merge directory %d: %w", i, err)
 		}
@@ -34,22 +45,23 @@ func (m *MergeDirs) MergeDirectories(
 // Merge two directories into one
 func mergeDirectories2(
 	ctx context.Context,
-	first *dagger.Directory,
-	second *dagger.Directory,
+	left *dagger.Directory,
+	right *dagger.Directory,
+	strategy MergeConflictStrategy,
 ) (*dagger.Directory, error) {
-	entries, err := second.Entries(ctx)
+	entries, err := right.Entries(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not get entries from second directory: %w", err)
 	}
 
 	for _, path := range entries {
-		first, err = copyPath(ctx, first, second, path)
+		left, err = copyPath(ctx, left, right, path, strategy)
 		if err != nil {
 			return nil, fmt.Errorf("could not copy at path '%s': %w", path, err)
 		}
 	}
 
-	return first, nil
+	return left, nil
 }
 
 // Copy a specific path from one directory to another
@@ -58,6 +70,7 @@ func copyPath(
 	target *dagger.Directory,
 	source *dagger.Directory,
 	path string,
+	strategy MergeConflictStrategy,
 ) (*dagger.Directory, error) {
 	fileType, err := source.Stat(path).FileType(ctx)
 	if err != nil {

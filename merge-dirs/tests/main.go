@@ -21,8 +21,6 @@ func (m *MergeDirsTests) All(ctx context.Context) error {
 }
 
 func (m *MergeDirsTests) TestMergeDirectories(ctx context.Context) error {
-	var err error
-
 	dir1 := dag.Directory().
 		WithNewFile("a", "a").
 		WithNewFile("b", "b")
@@ -32,23 +30,41 @@ func (m *MergeDirsTests) TestMergeDirectories(ctx context.Context) error {
 		WithNewFile("d", "d")
 
 	merged := dag.MergeDirs().
-		MergeDirectories([]*dagger.Directory{
-			dir1,
-			dir2,
-		})
+		Merge([]*dagger.Directory{dir1, dir2})
 
-	err = assertEntries(ctx, merged, []string{"a", "b", "c", "d"})
-	if err != nil {
-		return err
-	}
+	return assertEntries(
+		ctx,
+		merged,
+		[]ExpectedFile{
+			{
+				name:    "a",
+				content: "a",
+			},
+			{
+				name:    "b",
+				content: "b",
+			},
+			{
+				name:    "c",
+				content: "c",
+			},
+			{
+				name:    "d",
+				content: "d",
+			},
+		},
+	)
+}
 
-	return nil
+type ExpectedFile struct {
+	name    string
+	content string
 }
 
 func assertEntries(
 	ctx context.Context,
 	directory *dagger.Directory,
-	expectedFiles []string,
+	expectedFiles []ExpectedFile,
 ) error {
 	entries, err := directory.Entries(ctx)
 	if err != nil {
@@ -56,16 +72,31 @@ func assertEntries(
 	}
 
 	expectedEntries := map[string]bool{}
+	expectedContent := map[string]string{}
 	for _, file := range expectedFiles {
-		expectedEntries[file] = false
+		expectedEntries[file.name] = false
+		expectedContent[file.name] = file.content
 	}
 
 	for _, entry := range entries {
-		if _, exists := expectedEntries[entry]; exists {
-			expectedEntries[entry] = true
-		} else {
+		_, ok := expectedEntries[entry]
+		if !ok {
 			return fmt.Errorf("unexpected file in merged directory: %s", entry)
 		}
+
+		content, err := directory.File(entry).Contents(ctx)
+		if err != nil {
+			return fmt.Errorf("could not get content of merged file '%s': %w", entry, err)
+		}
+
+		if content != expectedContent[entry] {
+			return fmt.Errorf(
+				"file '%s' did not match the expected content: '%s' (expected) != '%s' (actual)",
+				entry, expectedContent[entry], content,
+			)
+		}
+
+		expectedEntries[entry] = true
 	}
 
 	for file, found := range expectedEntries {
