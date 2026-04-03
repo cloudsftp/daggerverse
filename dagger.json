@@ -1,0 +1,14 @@
+{
+  "name": "clouds-dagger-modules",
+  "engineVersion": "v0.20.3",
+  "sdk": {
+    "source": "go"
+  },
+  "dependencies": [
+    {
+      "name": "merge-dirs-tests",
+      "source": "merge-dirs/tests"
+    }
+  ],
+  "source": "pipelines"
+}

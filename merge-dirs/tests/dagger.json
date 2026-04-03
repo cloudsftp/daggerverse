@@ -1,5 +1,5 @@
 {
-  "name": "tests",
+  "name": "merge-dirs-tests",
   "engineVersion": "v0.20.3",
   "sdk": {
     "source": "go"

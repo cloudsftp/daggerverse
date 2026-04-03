@@ -7,9 +7,20 @@ import (
 	"dagger/tests/internal/dagger"
 )
 
-type Tests struct{}
+type MergeDirsTests struct{}
 
-func (m *Tests) TestMergeDirectories(ctx context.Context) error {
+func (m *MergeDirsTests) All(ctx context.Context) error {
+	var err error
+
+	err = m.TestMergeDirectories(ctx)
+	if err != nil {
+		return fmt.Errorf("merge directories test failed: %w", err)
+	}
+
+	return nil
+}
+
+func (m *MergeDirsTests) TestMergeDirectories(ctx context.Context) error {
 	var err error
 
 	dir1 := dag.Directory().
