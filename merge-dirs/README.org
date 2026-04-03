@@ -3,9 +3,9 @@
 A Dagger module for merging multiple directories into one.
 Does not support symlinks.
 
-⊙ Usage
+* Usage
 
-⊘ CLI Example
+** CLI Example
 
 #+begin_src shell
 dagger call -m github.com/cloudsftp/daggerverse/merge-dirs \
@@ -13,9 +13,9 @@ dagger call -m github.com/cloudsftp/daggerverse/merge-dirs \
     export --path ./merged
 #+end_src
 
-⊘ Go Example
+** Go Example
 
-⊖ Install the Module
+*** Install the Module
 
 To use this module in your Dagger project, first install it:
 
