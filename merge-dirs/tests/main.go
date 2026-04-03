@@ -9,62 +9,69 @@ import (
 
 type MergeDirsTests struct{}
 
-func (m *MergeDirsTests) All(ctx context.Context) error {
-	var err error
-
-	err = m.TestMergeDirectories(ctx)
-	if err != nil {
-		return fmt.Errorf("merge directories test failed: %w", err)
-	}
-
-	return nil
-}
-
-func (m *MergeDirsTests) TestMergeDirectories(ctx context.Context) error {
-	dir1 := dag.Directory().
-		WithNewFile("a", "a").
-		WithNewFile("b", "b")
-
-	dir2 := dag.Directory().
-		WithNewFile("c", "c").
-		WithNewFile("d", "d")
-
-	merged := dag.MergeDirs().
-		Merge([]*dagger.Directory{dir1, dir2})
-
-	return assertEntries(
-		ctx,
-		merged,
-		[]ExpectedFile{
-			{
-				name:    "a",
-				content: "a",
-			},
-			{
-				name:    "b",
-				content: "b",
-			},
-			{
-				name:    "c",
-				content: "c",
-			},
-			{
-				name:    "d",
-				content: "d",
-			},
-		},
-	)
-}
-
 type ExpectedFile struct {
 	name    string
 	content string
 }
 
+type MergeDirectoriesTestCase struct {
+	name     string
+	dirs     []*dagger.Directory
+	expected []*ExpectedFile
+}
+
+func (m *MergeDirsTests) All(ctx context.Context) error {
+	tests := []MergeDirectoriesTestCase{
+		{
+			name: "disjunct files root",
+			dirs: []*dagger.Directory{
+				dag.Directory().
+					WithNewFile("a", "a").
+					WithNewFile("b", "b"),
+				dag.Directory().
+					WithNewFile("c", "c").
+					WithNewFile("d", "d"),
+			},
+			expected: []*ExpectedFile{
+				{
+					name:    "a",
+					content: "a",
+				},
+				{
+					name:    "b",
+					content: "b",
+				},
+				{
+					name:    "c",
+					content: "c",
+				},
+				{
+					name:    "d",
+					content: "d",
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		err := test.run(ctx)
+		if err != nil {
+			return fmt.Errorf("test case '%s' failed: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (t *MergeDirectoriesTestCase) run(ctx context.Context) error {
+	merged := dag.MergeDirs().Merge(t.dirs)
+	return assertEntries(ctx, merged, t.expected)
+}
+
 func assertEntries(
 	ctx context.Context,
 	directory *dagger.Directory,
-	expectedFiles []ExpectedFile,
+	expectedFiles []*ExpectedFile,
 ) error {
 	entries, err := directory.Entries(ctx)
 	if err != nil {
