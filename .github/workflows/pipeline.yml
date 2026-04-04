@@ -14,5 +14,6 @@ jobs:
         with:
           version: "latest"
           verb: call
-          args: run
+          # args: run
+          args: test
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
