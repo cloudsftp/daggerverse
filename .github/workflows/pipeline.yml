@@ -19,11 +19,11 @@ jobs:
         run: |
           dagger develop
 
-          cd merge-dirs
-          dagger develop
-          cd tests
-          dagger develop
-          cd ../..
+          for dir in bun-runner go-runner merge-dirs merge-dirs/tests rust-runner; do
+            cd "$dir"
+            dagger develop
+            cd -
+          done
 
       - name: Lint
         run: dagger call lint --source=.
