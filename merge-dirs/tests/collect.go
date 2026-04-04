@@ -63,22 +63,13 @@ func recursivelyCollectFiles(
 			files[path] = content
 
 		case dagger.FileTypeSymlink:
-			return nil, fmt.Errorf(
-				"path '%s' is a symlink: %w",
-				path, err,
-			)
+			return nil, fmt.Errorf("path '%s' is a symlink", path)
 
 		case dagger.FileTypeUnknown:
-			return nil, fmt.Errorf(
-				"unknown file type of path '%s': %w",
-				path, err,
-			)
+			return nil, fmt.Errorf("unknown file type of path '%s'", path)
 
 		default:
-			return nil, fmt.Errorf(
-				"file type of path '%s' unexpected: %w",
-				path, err,
-			)
+			return nil, fmt.Errorf("file type of path '%s' unexpected", path)
 		}
 	}
 

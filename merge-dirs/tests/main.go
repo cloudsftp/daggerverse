@@ -38,7 +38,8 @@ func (m *MergeDirsTests) runSuccessTests(ctx context.Context) error {
 	tests := []MergeDirectoriesTestCase{
 		// Conflict strategy ERROR
 		{
-			name: "disjunct files at root",
+			name:     "disjunct files at root",
+			strategy: dagger.MergeDirsMergeConflictStrategyErrorOnConflict,
 			dirs: []*dagger.Directory{
 				buildDirectory(map[string]any{"a": "a", "b": "b"}),
 				buildDirectory(map[string]any{"c": "c", "d": "d"}),
@@ -46,7 +47,8 @@ func (m *MergeDirsTests) runSuccessTests(ctx context.Context) error {
 			expected: buildDirectory(map[string]any{"a": "a", "b": "b", "c": "c", "d": "d"}),
 		},
 		{
-			name: "disjunct files in subdir",
+			name:     "disjunct files in subdir",
+			strategy: dagger.MergeDirsMergeConflictStrategyErrorOnConflict,
 			dirs: []*dagger.Directory{
 				buildDirectory(map[string]any{"sub": map[string]any{"a": "a"}}),
 				buildDirectory(map[string]any{"sub": map[string]any{"b": "b"}}),
@@ -54,7 +56,8 @@ func (m *MergeDirsTests) runSuccessTests(ctx context.Context) error {
 			expected: buildDirectory(map[string]any{"sub": map[string]any{"a": "a", "b": "b"}}),
 		},
 		{
-			name: "disjunct subdirs",
+			name:     "disjunct subdirs",
+			strategy: dagger.MergeDirsMergeConflictStrategyErrorOnConflict,
 			dirs: []*dagger.Directory{
 				buildDirectory(map[string]any{"d1": map[string]any{"f1": "f1"}}),
 				buildDirectory(map[string]any{"d2": map[string]any{"f2": "f2"}}),
@@ -65,7 +68,8 @@ func (m *MergeDirsTests) runSuccessTests(ctx context.Context) error {
 			}),
 		},
 		{
-			name: "nested disjunct",
+			name:     "nested disjunct",
+			strategy: dagger.MergeDirsMergeConflictStrategyErrorOnConflict,
 			dirs: []*dagger.Directory{
 				buildDirectory(map[string]any{
 					"a": map[string]any{
@@ -88,7 +92,8 @@ func (m *MergeDirsTests) runSuccessTests(ctx context.Context) error {
 			}),
 		},
 		{
-			name: "deep nested",
+			name:     "deep nested",
+			strategy: dagger.MergeDirsMergeConflictStrategyErrorOnConflict,
 			dirs: []*dagger.Directory{
 				buildDirectory(map[string]any{
 					"l1": map[string]any{
@@ -116,7 +121,8 @@ func (m *MergeDirsTests) runSuccessTests(ctx context.Context) error {
 			}),
 		},
 		{
-			name: "three dirs",
+			name:     "three dirs",
+			strategy: dagger.MergeDirsMergeConflictStrategyErrorOnConflict,
 			dirs: []*dagger.Directory{
 				buildDirectory(map[string]any{"a": "a"}),
 				buildDirectory(map[string]any{"b": "b"}),
@@ -125,7 +131,8 @@ func (m *MergeDirsTests) runSuccessTests(ctx context.Context) error {
 			expected: buildDirectory(map[string]any{"a": "a", "b": "b", "c": "c"}),
 		},
 		{
-			name: "four dirs shared subdir",
+			name:     "four dirs shared subdir",
+			strategy: dagger.MergeDirsMergeConflictStrategyErrorOnConflict,
 			dirs: []*dagger.Directory{
 				buildDirectory(map[string]any{
 					"shared": map[string]any{"a": "a"},
