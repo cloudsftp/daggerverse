@@ -149,6 +149,10 @@ func copyFromRight(
 	path string,
 	fileType dagger.FileType,
 ) (*dagger.Directory, error) {
+	left = left.Filter(dagger.DirectoryFilterOpts{
+		Exclude: []string{path},
+	})
+
 	switch fileType {
 	case dagger.FileTypeDirectory:
 		directory := right.Directory(path)
