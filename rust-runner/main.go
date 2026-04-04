@@ -38,7 +38,6 @@ func (m *RustRunner) Builder(
 
 // Build a service executable
 func (m *RustRunner) BuildExecutable(
-	ctx context.Context,
 	// +defaultPath="/"
 	source *dagger.Directory,
 	name string,
@@ -51,12 +50,11 @@ func (m *RustRunner) BuildExecutable(
 
 // Build a service image
 func (m *RustRunner) BuildImage(
-	ctx context.Context,
 	// +defaultPath="/"
 	source *dagger.Directory,
 	name string,
 ) *dagger.Container {
-	return m.ServiceContainer(m.BuildExecutable(ctx, source, name)).
+	return m.ServiceContainer(m.BuildExecutable(source, name)).
 		WithEntrypoint([]string{"/server"})
 }
 

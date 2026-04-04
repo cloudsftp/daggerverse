@@ -36,7 +36,6 @@ func (m *GoRunner) Builder(
 
 // Build a service executable
 func (m *GoRunner) BuildExecutable(
-	ctx context.Context,
 	// +defaultPath="/"
 	source *dagger.Directory,
 	path string,
@@ -52,13 +51,12 @@ func (m *GoRunner) BuildExecutable(
 
 // Build a service image
 func (m *GoRunner) BuildImage(
-	ctx context.Context,
 	// +defaultPath="/"
 	source *dagger.Directory,
 	path string,
 	name string,
 ) *dagger.Container {
-	return m.ServiceContainer(m.BuildExecutable(ctx, source, path, name)).
+	return m.ServiceContainer(m.BuildExecutable(source, path, name)).
 		WithEntrypoint([]string{"/server"})
 }
 
