@@ -12,10 +12,7 @@ type BunRunner struct {
 }
 
 // Returns a cached Bun builder container
-func (m *BunRunner) Builder(
-	// +defaultPath="/"
-	source *dagger.Directory,
-) *dagger.Container {
+func (m *BunRunner) Builder(source *dagger.Directory) *dagger.Container {
 	source = source.WithoutDirectory("target")
 
 	return dag.Container().

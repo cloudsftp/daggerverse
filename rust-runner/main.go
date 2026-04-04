@@ -12,10 +12,7 @@ type RustRunner struct {
 }
 
 // Returns a cached Rust builder container
-func (m *RustRunner) Builder(
-	// +defaultPath="/"
-	source *dagger.Directory,
-) *dagger.Container {
+func (m *RustRunner) Builder(source *dagger.Directory) *dagger.Container {
 	source = source.WithoutDirectory("target")
 
 	return dag.Container().
@@ -37,11 +34,7 @@ func (m *RustRunner) Builder(
 }
 
 // Build a service executable
-func (m *RustRunner) BuildExecutable(
-	// +defaultPath="/"
-	source *dagger.Directory,
-	name string,
-) *dagger.File {
+func (m *RustRunner) BuildExecutable(source *dagger.Directory, name string) *dagger.File {
 	return m.Builder(source).
 		WithExec([]string{"cargo", "build", "--release", "-p", name}).
 		WithExec([]string{"cp", "target/release/" + name, "/" + name}).
@@ -49,11 +42,7 @@ func (m *RustRunner) BuildExecutable(
 }
 
 // Build a service image
-func (m *RustRunner) BuildImage(
-	// +defaultPath="/"
-	source *dagger.Directory,
-	name string,
-) *dagger.Container {
+func (m *RustRunner) BuildImage(source *dagger.Directory, name string) *dagger.Container {
 	return m.ServiceContainer(m.BuildExecutable(source, name)).
 		WithEntrypoint([]string{"/server"})
 }

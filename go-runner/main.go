@@ -13,10 +13,7 @@ type GoRunner struct {
 }
 
 // Returns a cached Go builder container
-func (m *GoRunner) Builder(
-	// +defaultPath="/"
-	source *dagger.Directory,
-) *dagger.Container {
+func (m *GoRunner) Builder(source *dagger.Directory) *dagger.Container {
 	return dag.Container().
 		From(fmt.Sprintf("golang:%s-alpine%s", m.GoVersion, m.AlpineVersion)).
 
@@ -35,12 +32,7 @@ func (m *GoRunner) Builder(
 }
 
 // Build a service executable
-func (m *GoRunner) BuildExecutable(
-	// +defaultPath="/"
-	source *dagger.Directory,
-	path string,
-	name string,
-) *dagger.File {
+func (m *GoRunner) BuildExecutable(source *dagger.Directory, path string, name string) *dagger.File {
 	return m.Builder(source).
 		WithExec([]string{
 			"go", "build", "-o", name,
@@ -50,12 +42,7 @@ func (m *GoRunner) BuildExecutable(
 }
 
 // Build a service image
-func (m *GoRunner) BuildImage(
-	// +defaultPath="/"
-	source *dagger.Directory,
-	path string,
-	name string,
-) *dagger.Container {
+func (m *GoRunner) BuildImage(source *dagger.Directory, path string, name string) *dagger.Container {
 	return m.ServiceContainer(m.BuildExecutable(source, path, name)).
 		WithEntrypoint([]string{"/server"})
 }
