@@ -16,7 +16,14 @@ jobs:
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
 
       - name: Generate Dagger code
-        run: dagger develop
+        run: |
+          dagger develop
+
+          cd merge-dirs
+          dagger develop
+          cd tests
+          dagger develop
+          cd ../..
 
       - name: Lint
         run: dagger call lint --source=.
