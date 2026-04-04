@@ -1,19 +1,25 @@
-name: Test Modules
+name: CI
 
 on: [push, pull_request]
 
 jobs:
-  test_modules:
-    name: Test Modules
+  ci:
+    name: Lint and Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
-      - name: Test and Lint
+      - name: Setup Dagger
         uses: dagger/dagger-for-github@v8.4.1
         with:
           version: "latest"
-          verb: call
-          # args: run
-          args: test
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+
+      - name: Generate Dagger code
+        run: dagger develop
+
+      - name: Lint
+        run: dagger call lint --source=.
+
+      - name: Test
+        run: dagger call test
