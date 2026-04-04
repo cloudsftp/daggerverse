@@ -270,21 +270,24 @@ func (m *MergeDirsTests) runSuccessTests(ctx context.Context) error {
 func (m *MergeDirsTests) runErrorTests(ctx context.Context) error {
 	tests := []MergeDirectoriesErrorTestCase{
 		{
-			name: "file conflict at root",
+			name:     "file conflict at root",
+			strategy: dagger.MergeDirsMergeConflictStrategyErrorOnConflict,
 			dirs: []*dagger.Directory{
 				buildDirectory(map[string]any{"f": "L"}),
 				buildDirectory(map[string]any{"f": "R"}),
 			},
 		},
 		{
-			name: "file conflict in subdir",
+			name:     "file conflict in subdir",
+			strategy: dagger.MergeDirsMergeConflictStrategyErrorOnConflict,
 			dirs: []*dagger.Directory{
 				buildDirectory(map[string]any{"sub": map[string]any{"f": "L"}}),
 				buildDirectory(map[string]any{"sub": map[string]any{"f": "R"}}),
 			},
 		},
 		{
-			name: "file conflict nested deep",
+			name:     "file conflict nested deep",
+			strategy: dagger.MergeDirsMergeConflictStrategyErrorOnConflict,
 			dirs: []*dagger.Directory{
 				buildDirectory(map[string]any{
 					"a": map[string]any{
@@ -303,21 +306,24 @@ func (m *MergeDirsTests) runErrorTests(ctx context.Context) error {
 			},
 		},
 		{
-			name: "type mismatch: dir then file",
+			name:     "type mismatch: dir then file",
+			strategy: dagger.MergeDirsMergeConflictStrategyErrorOnConflict,
 			dirs: []*dagger.Directory{
 				buildDirectory(map[string]any{"x": map[string]any{"i": "i"}}),
 				buildDirectory(map[string]any{"x": "file"}),
 			},
 		},
 		{
-			name: "type mismatch: file then dir",
+			name:     "type mismatch: file then dir",
+			strategy: dagger.MergeDirsMergeConflictStrategyErrorOnConflict,
 			dirs: []*dagger.Directory{
 				buildDirectory(map[string]any{"x": "file"}),
 				buildDirectory(map[string]any{"x": map[string]any{"i": "i"}}),
 			},
 		},
 		{
-			name: "type mismatch nested",
+			name:     "type mismatch nested",
+			strategy: dagger.MergeDirsMergeConflictStrategyErrorOnConflict,
 			dirs: []*dagger.Directory{
 				buildDirectory(map[string]any{
 					"a": map[string]any{
@@ -332,7 +338,8 @@ func (m *MergeDirsTests) runErrorTests(ctx context.Context) error {
 			},
 		},
 		{
-			name: "conflict in three-way",
+			name:     "conflict in three-way",
+			strategy: dagger.MergeDirsMergeConflictStrategyErrorOnConflict,
 			dirs: []*dagger.Directory{
 				buildDirectory(map[string]any{"f": "1"}),
 				buildDirectory(map[string]any{"other": "x"}),
@@ -340,7 +347,8 @@ func (m *MergeDirsTests) runErrorTests(ctx context.Context) error {
 			},
 		},
 		{
-			name: "conflict early in four-way",
+			name:     "conflict early in four-way",
+			strategy: dagger.MergeDirsMergeConflictStrategyErrorOnConflict,
 			dirs: []*dagger.Directory{
 				buildDirectory(map[string]any{"x": "a"}),
 				buildDirectory(map[string]any{"y": "b"}),
