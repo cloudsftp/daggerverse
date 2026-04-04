@@ -3,18 +3,70 @@ package main
 import (
 	"context"
 	"fmt"
+
+	"dagger/clouds-dagger-modules/internal/dagger"
+)
+
+const (
+	golangLintVersion = "2.11.4"
 )
 
 type CloudsDaggerModules struct{}
 
-// Run Tests
-func (m *CloudsDaggerModules) Test(ctx context.Context) error {
-	var err error
-
-	err = dag.MergeDirsTests().All(ctx)
-	if err != nil {
-		return fmt.Errorf("merge directories tests failed: %w", err)
+// Run the whole pipeline
+func (m CloudsDaggerModules) Run(
+	ctx context.Context,
+	// +defaultPath="/"
+	source *dagger.Directory,
+) error {
+	if err := m.Lint(ctx, source); err != nil {
+		return err
 	}
 
+	if err := m.Test(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Lint Code
+func (m CloudsDaggerModules) Lint(
+	ctx context.Context,
+	// +defaultPath="/"
+	source *dagger.Directory,
+) error {
+	run := func(path string) error {
+		source := source.Directory(path)
+
+		_, err := dag.Container().
+			From("golangci/golangci-lint:v"+golangLintVersion+"-alpine").
+			WithMountedDirectory("/app", source).
+			WithWorkdir("/app").
+			WithExec([]string{"golangci-lint", "run", "./..."}).
+			Sync(ctx)
+
+		if err != nil {
+			return fmt.Errorf("lint failed: %w", err)
+		}
+
+		return nil
+	}
+
+	if err := run("merge-dirs"); err != nil {
+		return err
+	}
+	if err := run("merge-dirs/tests"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Run Tests
+func (m *CloudsDaggerModules) Test(ctx context.Context) error {
+	if err := dag.MergeDirsTests().All(ctx); err != nil {
+		return fmt.Errorf("merge directories tests failed: %w", err)
+	}
 	return nil
 }
