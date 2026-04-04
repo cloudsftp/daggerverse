@@ -120,7 +120,6 @@ func (m *MergeDirsTests) All(ctx context.Context) error {
 							WithNewFile("b", "b"),
 					),
 			},
-			strategy: dagger.MergeDirsMergeConflictStrategyKeepRight,
 			expected: []*ExpectedFile{
 				{
 					path:    "dir/a",

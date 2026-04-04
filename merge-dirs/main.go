@@ -158,7 +158,14 @@ func copyPathLeftExists(
 
 	switch strategy {
 	case ErrorOnConflict:
-		return nil, fmt.Errorf("entry '%s' exists in both left and right", path)
+		switch fileTypeRight {
+		case dagger.FileTypeDirectory:
+			return mergeDirectories2(ctx, left, right, strategy, path)
+
+		case dagger.FileTypeRegular:
+			return nil, fmt.Errorf("entry '%s' exists in both left and right", path)
+
+		}
 
 	case KeepRight:
 		switch fileTypeRight {
