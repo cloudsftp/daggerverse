@@ -7,7 +7,7 @@ import (
 )
 
 type RustRunner struct {
-	RustVersion  string // +default="1.94"
+	RustVersion   string // +default="1.94"
 	AlpineVersion string // +default="3.23"
 }
 
@@ -50,6 +50,6 @@ func (m *RustRunner) BuildImage(source *dagger.Directory, name string) *dagger.C
 // Create a minimal service container from an executable
 func (m *RustRunner) ServiceContainer(executable *dagger.File) *dagger.Container {
 	return dag.Container().
-		From("alpine:" + m.AlpineVersion).
+		From("alpine:"+m.AlpineVersion).
 		WithFile("/server", executable)
 }

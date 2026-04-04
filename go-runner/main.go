@@ -7,9 +7,9 @@ import (
 )
 
 type GoRunner struct {
-	GoVersion      string // +default="1.26"
-	AlpineVersion  string // +default="3.23"
-	GolangciVersion string // +default="v1.64"
+	GoVersion       string // +default="1.26"
+	AlpineVersion   string // +default="3.23"
+	GolangciVersion string // +default="v2.11"
 }
 
 // Returns a cached Go builder container
@@ -50,6 +50,6 @@ func (m *GoRunner) BuildImage(source *dagger.Directory, path string, name string
 // Create a minimal service container from an executable
 func (m *GoRunner) ServiceContainer(executable *dagger.File) *dagger.Container {
 	return dag.Container().
-		From("alpine:" + m.AlpineVersion).
+		From("alpine:"+m.AlpineVersion).
 		WithFile("/server", executable)
 }
