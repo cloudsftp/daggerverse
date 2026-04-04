@@ -33,7 +33,7 @@ func (m *MergeDirs) Merge(
 	var err error
 
 	for i, next := range rest {
-		first, err = mergeDirectories2(ctx, first, next, strategy)
+		first, err = mergeDirectories2(ctx, first, next, strategy, "")
 		if err != nil {
 			return nil, fmt.Errorf("could not merge directory %d: %w", i+1, err)
 		}
@@ -48,14 +48,19 @@ func mergeDirectories2(
 	left *dagger.Directory,
 	right *dagger.Directory,
 	strategy MergeConflictStrategy,
+	currentPath string,
 ) (*dagger.Directory, error) {
-	entries, err := right.Entries(ctx)
+	entries, err := right.Entries(ctx, dagger.DirectoryEntriesOpts{
+		Path: currentPath,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("could not get entries from second directory: %w", err)
 	}
 
-	for _, path := range entries {
-		left, err = copyEntry(ctx, left, right, path, strategy)
+	for _, entry := range entries {
+		path := currentPath + entry
+
+		left, err = copyPath(ctx, left, right, strategy, path)
 		if err != nil {
 			return nil, fmt.Errorf("could not copy at path '%s': %w", path, err)
 		}
@@ -65,23 +70,34 @@ func mergeDirectories2(
 }
 
 // Copy a specific path from one directory to another
-func copyEntry(
+func copyPath(
 	ctx context.Context,
 	left *dagger.Directory,
 	right *dagger.Directory,
-	entry string,
 	strategy MergeConflictStrategy,
+	path string,
 ) (*dagger.Directory, error) {
-	fileTypeLeft, err := left.Stat(entry).FileType(ctx)
-	existsLeft := err == nil
-
-	fileTypeRight, err := right.Stat(entry).FileType(ctx)
+	existsLeft, err := left.Exists(ctx, path)
 	if err != nil {
-		return nil, fmt.Errorf("could not get file type of path: %w", err)
+		return nil, fmt.Errorf(
+			"could not check, whether '%s' exists: %w",
+			path, err,
+		)
+	}
+
+	fileTypeRight, err := right.Stat(path).FileType(ctx)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"could not get file type of path '%s': %w",
+			path, err,
+		)
 	}
 
 	if existsLeft {
-		return copyEntryLeftExists(ctx, left, fileTypeLeft, right, fileTypeRight, entry, strategy)
+		return copyPathLeftExists(
+			ctx, left, right, strategy,
+			path, fileTypeRight,
+		)
 	}
 
 	err = assertAllowedFileType(fileTypeRight)
@@ -91,12 +107,12 @@ func copyEntry(
 
 	switch fileTypeRight {
 	case dagger.FileTypeDirectory:
-		directory := right.Directory(entry)
-		left = left.WithDirectory(entry, directory)
+		directory := right.Directory(path)
+		left = left.WithDirectory(path, directory)
 
 	case dagger.FileTypeRegular:
-		file := right.File(entry)
-		left = left.WithFile(entry, file)
+		file := right.File(path)
+		left = left.WithFile(path, file)
 
 	}
 
@@ -104,16 +120,31 @@ func copyEntry(
 }
 
 // Copy a specific entry from one directory to another, if the entry exists in both
-func copyEntryLeftExists(
+func copyPathLeftExists(
 	ctx context.Context,
 	left *dagger.Directory,
-	fileTypeLeft dagger.FileType,
 	right *dagger.Directory,
-	fileTypeRight dagger.FileType,
-	entry string,
 	strategy MergeConflictStrategy,
+	path string,
+	fileTypeRight dagger.FileType,
 ) (*dagger.Directory, error) {
 	var err error
+
+	fileTypeLeft, err := left.Stat(path).FileType(ctx)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"could not get file type of path '%s': %w",
+			path, err,
+		)
+	}
+
+	err = assertAllowedFileType(fileTypeLeft)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"left path '%s' has unsupported file type: %w",
+			path, err,
+		)
+	}
 
 	err = assertAllowedFileType(fileTypeLeft)
 	if err != nil {
@@ -127,17 +158,17 @@ func copyEntryLeftExists(
 
 	switch strategy {
 	case ErrorOnConflict:
-		return nil, fmt.Errorf("entry '%s' exists in both left and right", entry)
+		return nil, fmt.Errorf("entry '%s' exists in both left and right", path)
 
 	case KeepRight:
 		switch fileTypeRight {
 		case dagger.FileTypeDirectory:
-			directory := right.Directory(entry)
-			return left.WithDirectory(entry, directory), nil
+			directory := right.Directory(path)
+			return left.WithDirectory(path, directory), nil
 
 		case dagger.FileTypeRegular:
-			file := right.File(entry)
-			return left.WithFile(entry, file), nil
+			file := right.File(path)
+			return left.WithFile(path, file), nil
 
 		}
 
@@ -146,7 +177,7 @@ func copyEntryLeftExists(
 
 	}
 
-	return nil, fmt.Errorf("unknown strategy '%s'", strategy)
+	return nil, fmt.Errorf("unexpected strategy '%s'", strategy)
 }
 
 func assertAllowedFileType(fileType dagger.FileType) error {
