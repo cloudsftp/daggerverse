@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 
 	"dagger/merge-dirs/internal/dagger"
 )
@@ -29,21 +30,21 @@ func (m *MergeDirs) Merge(
 		return nil, fmt.Errorf("need at least 2 directories to merge, got %d", len(dirs))
 	}
 
-	first, rest := dirs[0], dirs[1:]
+	left, rest := dirs[0], dirs[1:]
 	var err error
 
-	for i, next := range rest {
-		first, err = mergeDirectories2(ctx, first, next, strategy, "")
+	for i, right := range rest {
+		left, err = mergeTwoDirectories(ctx, left, right, strategy, "")
 		if err != nil {
 			return nil, fmt.Errorf("could not merge directory %d: %w", i+1, err)
 		}
 	}
 
-	return first, nil
+	return left, nil
 }
 
 // Merge two directories into one
-func mergeDirectories2(
+func mergeTwoDirectories(
 	ctx context.Context,
 	left *dagger.Directory,
 	right *dagger.Directory,
@@ -54,11 +55,11 @@ func mergeDirectories2(
 		Path: currentPath,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not get entries from second directory: %w", err)
+		return nil, fmt.Errorf("could not get entries right: %w", err)
 	}
 
 	for _, entry := range entries {
-		path := currentPath + entry
+		path := filepath.Join(currentPath, entry)
 
 		left, err = copyPath(ctx, left, right, strategy, path)
 		if err != nil {
@@ -146,14 +147,6 @@ func copyPathLeftExists(
 		)
 	}
 
-	err = assertAllowedFileType(fileTypeLeft)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"left path '%s' has unsupported file type: %w",
-			path, err,
-		)
-	}
-
 	err = assertAllowedFileType(fileTypeRight)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -166,7 +159,7 @@ func copyPathLeftExists(
 	case dagger.FileTypeDirectory:
 		switch fileTypeLeft {
 		case dagger.FileTypeDirectory:
-			return mergeDirectories2(ctx, left, right, strategy, path)
+			return mergeTwoDirectories(ctx, left, right, strategy, path)
 
 		case dagger.FileTypeRegular:
 			switch strategy {
@@ -210,9 +203,6 @@ func copyPathLeftExists(
 
 			case KeepLeft:
 				return left, nil
-
-			default:
-				return nil, fmt.Errorf("unexpected strategy: %s", strategy)
 			}
 
 		case dagger.FileTypeRegular:
@@ -229,9 +219,6 @@ func copyPathLeftExists(
 
 			case KeepLeft:
 				return left, nil
-
-			default:
-				return nil, fmt.Errorf("unexpected strategy: %s", strategy)
 			}
 
 		default:
@@ -249,7 +236,7 @@ func copyPathLeftExists(
 
 	}
 
-	return nil, fmt.Errorf("unexpected strategy '%s'", strategy)
+	return nil, fmt.Errorf("unhandeled case at path '%s'", path)
 }
 
 func assertAllowedFileType(fileType dagger.FileType) error {

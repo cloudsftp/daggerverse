@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 
 	"dagger/tests/internal/dagger"
 )
@@ -224,7 +225,7 @@ func collectAllFiles(
 	}
 
 	for _, entry := range entries {
-		path := currentPath + entry
+		path := filepath.Join(currentPath, entry)
 
 		fileType, err := directory.Stat(path).FileType(ctx)
 		if err != nil {
