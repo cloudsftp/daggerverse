@@ -11,9 +11,16 @@ import (
 func collectAllFiles(
 	ctx context.Context,
 	directory *dagger.Directory,
+) (map[string]string, error) {
+	return recursivelyCollectFiles(ctx, directory, "", map[string]string{})
+}
+
+func recursivelyCollectFiles(
+	ctx context.Context,
+	directory *dagger.Directory,
 	currentPath string,
-	files []string,
-) ([]string, error) {
+	files map[string]string,
+) (map[string]string, error) {
 	entries, err := directory.Entries(ctx, dagger.DirectoryEntriesOpts{
 		Path: currentPath,
 	})
@@ -37,14 +44,23 @@ func collectAllFiles(
 
 		switch fileType {
 		case dagger.FileTypeDirectory:
-			filesInDirectory, err := collectAllFiles(ctx, directory, path, files)
+			filesInDirectory, err := recursivelyCollectFiles(ctx, directory, path, files)
 			if err != nil {
 				return nil, err
 			}
-			files = append(files, filesInDirectory...)
+			for path, content := range filesInDirectory {
+				files[path] = content
+			}
 
 		case dagger.FileTypeRegular:
-			files = append(files, path)
+			content, err := directory.File(path).Contents(ctx)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"could not get content of file at path '%s': %w",
+					path, err,
+				)
+			}
+			files[path] = content
 
 		case dagger.FileTypeSymlink:
 			return nil, fmt.Errorf(
