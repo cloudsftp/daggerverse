@@ -10,7 +10,7 @@ import (
 type MergeDirsTests struct{}
 
 type ExpectedFile struct {
-	name    string
+	path    string
 	content string
 }
 
@@ -35,19 +35,19 @@ func (m *MergeDirsTests) All(ctx context.Context) error {
 			},
 			expected: []*ExpectedFile{
 				{
-					name:    "a",
+					path:    "a",
 					content: "a",
 				},
 				{
-					name:    "b",
+					path:    "b",
 					content: "b",
 				},
 				{
-					name:    "c",
+					path:    "c",
 					content: "c",
 				},
 				{
-					name:    "d",
+					path:    "d",
 					content: "d",
 				},
 			},
@@ -65,15 +65,15 @@ func (m *MergeDirsTests) All(ctx context.Context) error {
 			strategy: dagger.MergeDirsMergeConflictStrategyKeepLeft,
 			expected: []*ExpectedFile{
 				{
-					name:    "a",
+					path:    "a",
 					content: "a",
 				},
 				{
-					name:    "b",
+					path:    "b",
 					content: "b1",
 				},
 				{
-					name:    "c",
+					path:    "c",
 					content: "c",
 				},
 			},
@@ -91,43 +91,47 @@ func (m *MergeDirsTests) All(ctx context.Context) error {
 			strategy: dagger.MergeDirsMergeConflictStrategyKeepRight,
 			expected: []*ExpectedFile{
 				{
-					name:    "a",
+					path:    "a",
 					content: "a",
 				},
 				{
-					name:    "b",
+					path:    "b",
 					content: "b2",
 				},
 				{
-					name:    "c",
+					path:    "c",
 					content: "c",
 				},
 			},
 		},
-		/*
-			{
-				name: "merge nested directory",
-				dirs: []*dagger.Directory{
-					dag.Directory().
-						WithNewDirectory("dir").
-						WithNewFile("a", "a"),
-					dag.Directory().
-						WithNewDirectory("dir").
-						WithNewFile("b", "b"),
+		{
+			name: "merge nested directory",
+			dirs: []*dagger.Directory{
+				dag.Directory().
+					WithDirectory(
+						"dir",
+						dag.Directory().
+							WithNewFile("a", "a"),
+					),
+				dag.Directory().
+					WithDirectory(
+						"dir",
+						dag.Directory().
+							WithNewFile("b", "b"),
+					),
+			},
+			strategy: dagger.MergeDirsMergeConflictStrategyKeepRight,
+			expected: []*ExpectedFile{
+				{
+					path:    "dir/a",
+					content: "a",
 				},
-				strategy: dagger.MergeDirsMergeConflictStrategyKeepRight,
-				expected: []*ExpectedFile{
-					{
-						name:    "dir/a",
-						content: "a",
-					},
-					{
-						name:    "dir/b",
-						content: "b",
-					},
+				{
+					path:    "dir/b",
+					content: "b",
 				},
 			},
-		*/
+		},
 	}
 
 	for _, test := range tests {
@@ -155,43 +159,112 @@ func assertEntries(
 	directory *dagger.Directory,
 	expectedFiles []*ExpectedFile,
 ) error {
-	entries, err := directory.Entries(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get entries: %w", err)
-	}
-
-	expectedEntries := map[string]bool{}
-	expectedContent := map[string]string{}
-	for _, file := range expectedFiles {
-		expectedEntries[file.name] = false
-		expectedContent[file.name] = file.content
-	}
-
-	for _, entry := range entries {
-		_, ok := expectedEntries[entry]
-		if !ok {
-			return fmt.Errorf("unexpected file in merged directory: %s", entry)
-		}
-
-		content, err := directory.File(entry).Contents(ctx)
+	for _, expectedFile := range expectedFiles {
+		exists, err := directory.Exists(ctx, expectedFile.path, dagger.DirectoryExistsOpts{
+			ExpectedType: dagger.ExistsTypeRegularType,
+		})
 		if err != nil {
-			return fmt.Errorf("could not get content of merged file '%s': %w", entry, err)
+			return fmt.Errorf(
+				"could not check, whether '%s' exists: %w",
+				expectedFile.path, err,
+			)
+		}
+		if !exists {
+			return fmt.Errorf("file '%s' does not exist", expectedFile.path)
 		}
 
-		if content != expectedContent[entry] {
+		content, err := directory.File(expectedFile.path).Contents(ctx)
+		if err != nil {
 			return fmt.Errorf(
-				"file '%s' did not match the expected content: '%s' (expected) != '%s' (actual)",
-				entry, expectedContent[entry], content,
+				"could not read file at path '%s': %w",
+				expectedFile.path, err,
 			)
 		}
 
-		expectedEntries[entry] = true
-	}
-
-	for file, found := range expectedEntries {
-		if !found {
-			return fmt.Errorf("expected file not found in merged directory: %s", file)
+		if content != expectedFile.content {
+			return fmt.Errorf(
+				"unexpected content in file '%s': expected '%s' != got '%s'",
+				expectedFile.path, expectedFile.content, content,
+			)
 		}
 	}
+
+	allFilePaths, err := collectAllFiles(ctx, directory, "", []string{})
+	if err != nil {
+		return fmt.Errorf("could not get all file paths: %w", err)
+	}
+
+	expectedFilePathsSet := map[string]struct{}{}
+	for _, expectedFile := range expectedFiles {
+		expectedFilePathsSet[expectedFile.path] = struct{}{}
+	}
+
+	for _, filePath := range allFilePaths {
+		if _, ok := expectedFilePathsSet[filePath]; !ok {
+			return fmt.Errorf("unexpected file path: %s", filePath)
+		}
+	}
+
 	return nil
+}
+
+func collectAllFiles(
+	ctx context.Context,
+	directory *dagger.Directory,
+	currentPath string,
+	files []string,
+) ([]string, error) {
+	entries, err := directory.Entries(ctx, dagger.DirectoryEntriesOpts{
+		Path: currentPath,
+	})
+	if err != nil {
+		return nil, fmt.Errorf(
+			"could not get entries of path '%s': %w",
+			currentPath, err,
+		)
+	}
+
+	for _, entry := range entries {
+		path := currentPath + entry
+
+		fileType, err := directory.Stat(path).FileType(ctx)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"could not get file type of path '%s': %w",
+				path, err,
+			)
+		}
+
+		switch fileType {
+		case dagger.FileTypeDirectory:
+			filesInDirectory, err := collectAllFiles(ctx, directory, path, files)
+			if err != nil {
+				return nil, err
+			}
+			files = append(files, filesInDirectory...)
+
+		case dagger.FileTypeRegular:
+			files = append(files, path)
+
+		case dagger.FileTypeSymlink:
+			return nil, fmt.Errorf(
+				"path '%s' is a symlink: %w",
+				path, err,
+			)
+
+		case dagger.FileTypeUnknown:
+			return nil, fmt.Errorf(
+				"unknown file type of path '%s': %w",
+				path, err,
+			)
+
+		default:
+			return nil, fmt.Errorf(
+				"file type of path '%s' unexpected: %w",
+				path, err,
+			)
+		}
+	}
+
+	return files, nil
 }
