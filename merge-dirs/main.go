@@ -10,9 +10,9 @@ import (
 type MergeConflictStrategy string
 
 const (
-	KeepLeft        MergeConflictStrategy = "KEEP_LEFT"
-	KeepRight       MergeConflictStrategy = "KEEP_RIGHT"
 	ErrorOnConflict MergeConflictStrategy = "ERROR"
+	KeepRight       MergeConflictStrategy = "KEEP_RIGHT"
+	KeepLeft        MergeConflictStrategy = "KEEP_LEFT"
 )
 
 type MergeDirs struct{}
@@ -22,7 +22,7 @@ func (m *MergeDirs) Merge(
 	ctx context.Context,
 	dirs []*dagger.Directory,
 	// +default="ERROR"
-	// Conflict resolution strategy: left (default), right, or error
+	// Conflict resolution strategy: KEEP_LEFT, KEEP_RIGHT, or ERROR (default)
 	strategy MergeConflictStrategy,
 ) (*dagger.Directory, error) {
 	if len(dirs) < 2 {
@@ -148,39 +148,104 @@ func copyPathLeftExists(
 
 	err = assertAllowedFileType(fileTypeLeft)
 	if err != nil {
-		return nil, fmt.Errorf("left has unsupported file type: %w", err)
+		return nil, fmt.Errorf(
+			"left path '%s' has unsupported file type: %w",
+			path, err,
+		)
 	}
 
 	err = assertAllowedFileType(fileTypeRight)
 	if err != nil {
-		return nil, fmt.Errorf("right has unsupported file type: %w", err)
+		return nil, fmt.Errorf(
+			"right path '%s' has unsupported file type: %w",
+			path, err,
+		)
 	}
 
-	switch strategy {
-	case ErrorOnConflict:
-		switch fileTypeRight {
+	switch fileTypeRight {
+	case dagger.FileTypeDirectory:
+		switch fileTypeLeft {
 		case dagger.FileTypeDirectory:
 			return mergeDirectories2(ctx, left, right, strategy, path)
 
 		case dagger.FileTypeRegular:
-			return nil, fmt.Errorf("entry '%s' exists in both left and right", path)
+			switch strategy {
+			case ErrorOnConflict:
+				return nil, fmt.Errorf(
+					"conflict for path '%s': right is directory and left is file",
+					path,
+				)
 
+			case KeepRight:
+				directory := right.Directory(path)
+				return left.WithDirectory(path, directory), nil
+
+			case KeepLeft:
+				return left, nil
+
+			default:
+				return nil, fmt.Errorf("unexpected strategy: %s", strategy)
+			}
+
+		default:
+			return nil, fmt.Errorf(
+				"unexpected file type of path '%s' in left: %s",
+				path, fileTypeLeft,
+			)
 		}
 
-	case KeepRight:
-		switch fileTypeRight {
+	case dagger.FileTypeRegular:
+		switch fileTypeLeft {
 		case dagger.FileTypeDirectory:
-			directory := right.Directory(path)
-			return left.WithDirectory(path, directory), nil
+			switch strategy {
+			case ErrorOnConflict:
+				return nil, fmt.Errorf(
+					"conflict for path '%s': right is file and left is directory",
+					path,
+				)
+
+			case KeepRight:
+				file := right.File(path)
+				return left.WithFile(path, file), nil
+
+			case KeepLeft:
+				return left, nil
+
+			default:
+				return nil, fmt.Errorf("unexpected strategy: %s", strategy)
+			}
 
 		case dagger.FileTypeRegular:
-			file := right.File(path)
-			return left.WithFile(path, file), nil
+			switch strategy {
+			case ErrorOnConflict:
+				return nil, fmt.Errorf(
+					"conflict for path '%s': both files",
+					path,
+				)
 
+			case KeepRight:
+				file := right.File(path)
+				return left.WithFile(path, file), nil
+
+			case KeepLeft:
+				return left, nil
+
+			default:
+				return nil, fmt.Errorf("unexpected strategy: %s", strategy)
+			}
+
+		default:
+			return nil, fmt.Errorf(
+				"unexpected file type of path '%s' in left: %s",
+				path, fileTypeLeft,
+			)
 		}
 
-	case KeepLeft:
-		return left, nil
+	default:
+		return nil, fmt.Errorf(
+			"unexpected file type of path '%s' in right: %s",
+			path, fileTypeRight,
+		)
 
 	}
 
