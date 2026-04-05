@@ -17,7 +17,6 @@ func (m *RustRunner) Builder(source *dagger.Directory) *dagger.Container {
 
 	return dag.Container().
 		From(fmt.Sprintf("rust:%s-alpine%s", m.RustVersion, m.AlpineVersion)).
-		WithExec([]string{"apk", "update"}).
 		WithExec([]string{
 			"apk", "add", "--no-cache",
 			"pkgconfig", "musl-dev",

@@ -7,8 +7,7 @@ import (
 )
 
 type BunRunner struct {
-	BunVersion    string // +default="1.3"
-	AlpineVersion string // +default="3.23"
+	BunVersion string // +default="1.3"
 }
 
 // Returns a cached Bun builder container
