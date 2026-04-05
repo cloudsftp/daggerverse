@@ -55,12 +55,11 @@ func (m CloudsDaggerModules) Lint(
 	}
 
 	for _, path := range []string{
-		"bun-runner",
-		"go-runner",
-		"merge-dirs",
+		"go",
+		"bun",
+		"rust",
 		"merge-dirs",
 		"pipelines",
-		"rust-runner",
 	} {
 		if err := run(path); err != nil {
 			return err

@@ -6,12 +6,12 @@ import (
 	"dagger/bun-runner/internal/dagger"
 )
 
-type BunRunner struct {
+type Bun struct {
 	BunVersion string // +default="1.3"
 }
 
 // Returns a cached Bun builder container
-func (m *BunRunner) Builder(source *dagger.Directory) *dagger.Container {
+func (m *Bun) Builder(source *dagger.Directory) *dagger.Container {
 	source = source.WithoutDirectory("target")
 
 	return dag.Container().

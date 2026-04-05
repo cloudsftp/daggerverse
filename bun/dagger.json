@@ -1,5 +1,5 @@
 {
-  "name": "bun-runner",
+  "name": "bun",
   "engineVersion": "v0.20.3",
   "sdk": {
     "source": "go"
