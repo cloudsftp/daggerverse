@@ -79,7 +79,6 @@ func (m *Go) BuildImage(
 	ctx context.Context,
 	source *dagger.Directory,
 	path string,
-	name string,
 ) (*dagger.Container, error) {
 	executable := m.BuildExecutable(source, path)
 	name, err := executable.Name(ctx)
