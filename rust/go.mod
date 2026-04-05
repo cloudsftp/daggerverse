@@ -1,4 +1,4 @@
-module dagger/rust-runner
+module dagger/rust
 
 go 1.26.1
 

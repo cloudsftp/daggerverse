@@ -1,4 +1,4 @@
-module dagger/bun-runner
+module dagger/bun
 
 go 1.26.1
 

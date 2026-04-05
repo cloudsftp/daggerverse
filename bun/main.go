@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"dagger/bun-runner/internal/dagger"
+	"dagger/bun/internal/dagger"
 )
 
 type Bun struct {

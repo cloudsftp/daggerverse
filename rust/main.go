@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"dagger/rust-runner/internal/dagger"
+	"dagger/rust/internal/dagger"
 )
 
 type Rust struct {
