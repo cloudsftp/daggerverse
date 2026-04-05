@@ -15,7 +15,7 @@ const (
 type CloudsDaggerModules struct{}
 
 // Run the whole pipeline
-func (m CloudsDaggerModules) Run(
+func (m CloudsDaggerModules) All(
 	ctx context.Context,
 	// +defaultPath="/"
 	source *dagger.Directory,
@@ -40,12 +40,9 @@ func (m CloudsDaggerModules) Lint(
 	run := func(path string) error {
 		source := source.Directory(path)
 
-		_, err := dag.Container().
-			From("golangci/golangci-lint:v"+golangLintVersion+"-alpine").
-			WithMountedDirectory("/app", source).
-			WithWorkdir("/app").
-			WithExec([]string{"golangci-lint", "run", "./..."}).
-			Sync(ctx)
+		err := dag.Go().Lint(ctx, dagger.GoLintOpts{
+			Source: source,
+		})
 
 		if err != nil {
 			return fmt.Errorf("lint failed: %w", err)

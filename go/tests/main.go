@@ -64,9 +64,8 @@ func (m *GoTests) TestLint(
 	// +defaultPath="./data"
 	source *dagger.Directory,
 ) error {
-	_, err := dag.Go().
-		Lint(dagger.GoLintOpts{Source: source}).
-		Sync(ctx)
+	err := dag.Go().
+		Lint(ctx, dagger.GoLintOpts{Source: source})
 	if err != nil {
 		return fmt.Errorf("could not lint: %w", err)
 	}

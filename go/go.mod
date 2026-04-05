@@ -1,4 +1,4 @@
-module dagger/go-runner
+module dagger/go
 
 go 1.26.1
 

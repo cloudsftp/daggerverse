@@ -31,8 +31,5 @@ jobs:
             fi
           done
 
-      - name: Lint
-        run: dagger call lint --source=.
-
-      - name: Test
-        run: dagger call test
+      - name: Run Pipeline
+        run: dagger call all
