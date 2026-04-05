@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	pathlib "path"
 
 	"dagger/clouds-dagger-modules/internal/dagger"
 )
@@ -57,12 +58,27 @@ func (m CloudsDaggerModules) Lint(
 		"bun-runner",
 		"go-runner",
 		"merge-dirs",
-		"merge-dirs/tests",
+		"merge-dirs",
 		"pipelines",
 		"rust-runner",
 	} {
 		if err := run(path); err != nil {
 			return err
+		}
+
+		testsPath := pathlib.Join(path, "tests")
+		testsExist, err := source.Exists(ctx, testsPath)
+		if err != nil {
+			return fmt.Errorf(
+				"could not check, whether '%s' exists: %w",
+				testsPath, err,
+			)
+		}
+
+		if testsExist {
+			if err := run(testsPath); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -74,5 +90,6 @@ func (m *CloudsDaggerModules) Test(ctx context.Context) error {
 	if err := dag.MergeDirsTests().All(ctx); err != nil {
 		return fmt.Errorf("merge directories tests failed: %w", err)
 	}
+
 	return nil
 }
