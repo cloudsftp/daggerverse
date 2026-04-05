@@ -29,7 +29,7 @@ func (m *Rust) Builder(source *dagger.Directory) *dagger.Container {
 		// Caches
 		WithMountedCache("/cache/cargo", dag.CacheVolume("rust-packages")).
 		WithEnvVariable("CARGO_HOME", "/cache/cargo").
-		WithMountedCache("target", dag.CacheVolume("rust-target"))
+		WithMountedCache("/src/target", dag.CacheVolume("rust-target"))
 }
 
 // Build a service executable

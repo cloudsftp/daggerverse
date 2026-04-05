@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"path/filepath"
-	"strings"
 
 	"dagger/go-runner/internal/dagger"
 )
@@ -23,16 +21,6 @@ func New(
 	// +default="2.11"
 	golangciVersion string,
 ) *Go {
-	/*
-		container := .
-
-			// Linter
-			WithExec([]string{
-				"go", "install",
-				"github.com/golangci/golangci-lint/cmd/golangci-lint@" + golangciVersion,
-			})
-	*/
-
 	return &Go{
 		goVersion,
 		alpineVersion,
@@ -40,13 +28,9 @@ func New(
 	}
 }
 
-// Returns a cached Go builder container
-func (m *Go) Builder(source *dagger.Directory) *dagger.Container {
+func (m *Go) builder(source *dagger.Directory) *dagger.Container {
 	return dag.Container().
 		From(fmt.Sprintf("golang:%s-alpine%s", m.GoVersion, m.AlpineVersion)).
-		WithExec([]string{
-			"apk", "add", "--no-cache", "git",
-		}).
 
 		// Caches
 		WithMountedCache("/go/pkg/mod", dag.CacheVolume("go-mod")).
@@ -54,33 +38,36 @@ func (m *Go) Builder(source *dagger.Directory) *dagger.Container {
 		WithMountedCache("/go/build-cache", dag.CacheVolume("go-build")).
 		WithEnvVariable("GOCACHE", "/go/build-cache").
 
-		// Source
-		WithDirectory("/src", source).
+		// Sources
+		WithMountedDirectory("/src", source).
 		WithWorkdir("/src")
 }
 
-// Build a service executable
-func (m *Go) BuildExecutable(
+// Compile executable
+func (m *Go) Compile(
+	// +defaultPath="/"
 	source *dagger.Directory,
+	// +default=""
 	path string,
 ) *dagger.File {
-	fileName := filepath.Base(path)
-	name := strings.TrimSuffix(fileName, filepath.Ext(fileName))
+	name := "program"
 
-	return m.Builder(source).
+	return m.builder(source).
 		WithExec([]string{
 			"go", "build", "-o", name, path,
 		}).
-		File(fileName)
+		File(name)
 }
 
 // Build a service image
 func (m *Go) BuildImage(
 	ctx context.Context,
+	// +defaultPath="/"
 	source *dagger.Directory,
+	// +default=""
 	path string,
 ) (*dagger.Container, error) {
-	executable := m.BuildExecutable(source, path)
+	executable := m.Compile(source, path)
 	name, err := executable.Name(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not get name of executable: %w", err)
@@ -91,4 +78,25 @@ func (m *Go) BuildImage(
 		From("alpine:"+m.AlpineVersion).
 		WithFile(executablePath, executable).
 		WithEntrypoint([]string{executablePath}), nil
+}
+
+func (m *Go) linter(
+	source *dagger.Directory,
+) *dagger.Container {
+	return dag.Container().
+		From("golangci/golangci-lint:v"+m.GolangCiVersion+"-alpine").
+
+		// Sources
+		WithMountedDirectory("/src", source).
+		WithWorkdir("/src")
+}
+
+func (m *Go) Lint(
+	// +defaultPath="/"
+	source *dagger.Directory,
+	// +default="./..."
+	path string,
+) *dagger.Container {
+	return m.linter(source).
+		WithExec([]string{"golangci-lint", "run", path})
 }
