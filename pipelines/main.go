@@ -8,10 +8,6 @@ import (
 	"dagger/clouds-dagger-modules/internal/dagger"
 )
 
-const (
-	golangLintVersion = "2.11.4"
-)
-
 type CloudsDaggerModules struct{}
 
 // Run the whole pipeline
