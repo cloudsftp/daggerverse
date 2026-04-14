@@ -1,0 +1,11 @@
+on:
+  push: {}
+
+jobs:
+  run-pipeline:
+    runs-on: shell
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run dagger pipeline
+        run: dagger call run
