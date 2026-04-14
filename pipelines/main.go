@@ -13,6 +13,10 @@ const (
 
 type CloudsDaggerModules struct{}
 
+func (m CloudsDaggerModules) Hello() string {
+	return "Hello, world!"
+}
+
 // Run the whole pipeline
 func (m CloudsDaggerModules) Run(
 	ctx context.Context,

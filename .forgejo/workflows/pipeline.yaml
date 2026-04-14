@@ -2,10 +2,27 @@ on:
   push: {}
 
 jobs:
-  run-pipeline:
+  ci:
     runs-on: shell
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Run dagger pipeline
-        run: dagger call run
+
+      - name: Generate Dagger code
+        run: |
+          dagger develop
+
+          for dir in go bun rust merge-dirs; do
+            cd "$dir"
+            dagger develop
+            cd -
+
+            if [ -d "$dir/tests" ]; then
+              cd "$dir/tests"
+              dagger develop
+              cd -
+            fi
+          done
+
+      #- name: Run dagger pipeline
+      #  run: dagger --progress plain call run
