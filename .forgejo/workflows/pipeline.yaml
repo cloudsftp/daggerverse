@@ -11,5 +11,8 @@ jobs:
       - name: Generate Dagger code
         run: ./ci/develop.sh
 
+      - name: Echo token
+        run: echo $DAGGER_CLOUD_TOKEN
+
       #- name: Run dagger pipeline
       #  run: dagger --progress plain call run
