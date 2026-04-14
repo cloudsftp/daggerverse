@@ -9,20 +9,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Generate Dagger code
-        run: |
-          dagger develop
-
-          for dir in go bun rust merge-dirs; do
-            cd "$dir"
-            dagger develop
-            cd -
-
-            if [ -d "$dir/tests" ]; then
-              cd "$dir/tests"
-              dagger develop
-              cd -
-            fi
-          done
+        run: ./ci/develop.sh
 
       #- name: Run dagger pipeline
       #  run: dagger --progress plain call run
