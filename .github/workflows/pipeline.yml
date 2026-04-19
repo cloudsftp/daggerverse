@@ -1,6 +1,9 @@
 name: CI
 
-on: [push]
+on:
+  push:
+    branches:
+      - latest
 
 jobs:
   ci:
@@ -16,20 +19,10 @@ jobs:
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
 
       - name: Generate Dagger code
-        run: |
-          dagger develop
+        run: ./ci/develop.sh
 
-          for dir in go bun rust merge-dirs; do
-            cd "$dir"
-            dagger develop
-            cd -
+      - name: Run Tests
+        run: dagger call test
 
-            if [ -d "$dir/tests" ]; then
-              cd "$dir/tests"
-              dagger develop
-              cd -
-            fi
-          done
-
-      - name: Run Pipeline
-        run: dagger call all
+      - name: Run Linter
+        run: dagger call lint

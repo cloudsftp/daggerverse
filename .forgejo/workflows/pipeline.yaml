@@ -1,0 +1,18 @@
+on:
+  push: {}
+
+jobs:
+  ci:
+    runs-on: dagger
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Generate Dagger Code
+        run: ./ci/develop.sh
+
+      - name: Run Tests
+        run: dagger call test
+
+      - name: Run Linter
+        run: dagger call lint
