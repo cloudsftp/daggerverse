@@ -1,6 +1,9 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - latest
 
 jobs:
   ci:
@@ -18,8 +21,8 @@ jobs:
       - name: Generate Dagger code
         run: ./ci/develop.sh
 
-      - name: Lint
-        run: dagger call lint --source=.
-
       - name: Test
         run: dagger call test
+
+      - name: Lint
+        run: dagger call lint
