@@ -16,3 +16,6 @@ jobs:
 
       - name: Run Linter
         run: dagger call lint
+
+      - name: Test Fail
+        run: exit 1
