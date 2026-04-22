@@ -3,18 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	pathlib "path"
 
 	"dagger/clouds-dagger-modules/internal/dagger"
-)
-
-const (
-	golangLintVersion = "2.11.4"
 )
 
 type CloudsDaggerModules struct{}
 
 // Run the whole pipeline
-func (m CloudsDaggerModules) Run(
+func (m CloudsDaggerModules) All(
 	ctx context.Context,
 	// +defaultPath="/"
 	source *dagger.Directory,
@@ -39,12 +36,9 @@ func (m CloudsDaggerModules) Lint(
 	run := func(path string) error {
 		source := source.Directory(path)
 
-		_, err := dag.Container().
-			From("golangci/golangci-lint:v"+golangLintVersion+"-alpine").
-			WithMountedDirectory("/app", source).
-			WithWorkdir("/app").
-			WithExec([]string{"golangci-lint", "run", "./..."}).
-			Sync(ctx)
+		err := dag.Go().Lint(ctx, dagger.GoLintOpts{
+			Source: source,
+		})
 
 		if err != nil {
 			return fmt.Errorf("lint failed: %w", err)
@@ -53,11 +47,31 @@ func (m CloudsDaggerModules) Lint(
 		return nil
 	}
 
-	if err := run("merge-dirs"); err != nil {
-		return err
-	}
-	if err := run("merge-dirs/tests"); err != nil {
-		return err
+	for _, path := range []string{
+		"go",
+		"bun",
+		"rust",
+		"merge-dirs",
+		"pipelines",
+	} {
+		if err := run(path); err != nil {
+			return err
+		}
+
+		testsPath := pathlib.Join(path, "tests")
+		testsExist, err := source.Exists(ctx, testsPath)
+		if err != nil {
+			return fmt.Errorf(
+				"could not check, whether '%s' exists: %w",
+				testsPath, err,
+			)
+		}
+
+		if testsExist {
+			if err := run(testsPath); err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
@@ -68,5 +82,6 @@ func (m *CloudsDaggerModules) Test(ctx context.Context) error {
 	if err := dag.MergeDirsTests().All(ctx); err != nil {
 		return fmt.Errorf("merge directories tests failed: %w", err)
 	}
+
 	return nil
 }

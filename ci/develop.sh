@@ -4,7 +4,9 @@ set -e -v
 
 dagger develop
 
-for dir in merge-dirs; do
+dirs="merge-dirs rust go bun"
+
+for dir in $dirs; do
     cd "$dir"
     dagger develop
     cd -

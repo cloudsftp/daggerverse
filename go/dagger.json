@@ -1,5 +1,5 @@
 {
-  "name": "merge-dirs",
+  "name": "go",
   "engineVersion": "v0.20.6",
   "sdk": {
     "source": "go"

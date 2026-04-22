@@ -1,4 +1,4 @@
-module dagger/clouds-dagger-modules
+module dagger/bun
 
 go 1.26.1
 
