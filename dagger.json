@@ -8,6 +8,10 @@
     {
       "name": "merge-dirs-tests",
       "source": "merge-dirs/tests"
+    },
+    {
+      "name": "rust-tests",
+      "source": "rust/tests"
     }
   ],
   "source": "pipelines"
