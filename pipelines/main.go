@@ -53,11 +53,15 @@ func (m CloudsDaggerModules) Lint(
 		return nil
 	}
 
-	if err := run("merge-dirs"); err != nil {
-		return err
-	}
-	if err := run("merge-dirs/tests"); err != nil {
-		return err
+	for _, path := range []string{
+		"pipelines",
+		"merge-dirs",
+		"merge-dirs/tests",
+		"rust",
+	} {
+		if err := run(path); err != nil {
+			return fmt.Errorf("for path '%s': %w", path, err)
+		}
 	}
 
 	return nil
