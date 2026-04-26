@@ -12,12 +12,12 @@ func (m *Rust) Check(
 	ctx context.Context,
 	source *dagger.Directory,
 	// +optional
-	name string,
+	pkg string,
 ) error {
 	checkCommand := []string{"cargo", "check"}
 
-	if len(name) > 0 {
-		checkCommand = append(checkCommand, "-p", name)
+	if len(pkg) > 0 {
+		checkCommand = append(checkCommand, "-p", pkg)
 	}
 
 	if _, err := m.builder(source).
