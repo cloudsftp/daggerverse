@@ -34,6 +34,19 @@ func (m *RustTests) TestCheck(
 	return nil
 }
 
+// Test lint rust code
+func (m *RustTests) TestLint(
+	ctx context.Context,
+	// +defaultPath="."
+	source *dagger.Directory,
+) error {
+	if err := dag.Rust().Lint(ctx, source); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Test run tests
 func (m *RustTests) TestTest(
 	ctx context.Context,
