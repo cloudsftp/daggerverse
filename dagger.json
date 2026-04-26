@@ -1,6 +1,6 @@
 {
   "name": "clouds-dagger-modules",
-  "engineVersion": "v0.20.3",
+  "engineVersion": "v0.20.6",
   "sdk": {
     "source": "go"
   },
@@ -8,6 +8,10 @@
     {
       "name": "merge-dirs-tests",
       "source": "merge-dirs/tests"
+    },
+    {
+      "name": "rust-tests",
+      "source": "rust/tests"
     }
   ],
   "source": "pipelines"

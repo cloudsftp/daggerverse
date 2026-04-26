@@ -1,0 +1,9 @@
+[workspace]
+members = ["bin-a", "bin-b"]
+resolver = "2"
+
+[package]
+name = "root"
+version = "0.1.0"
+edition = "2024"
+

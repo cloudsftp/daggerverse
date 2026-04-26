@@ -23,7 +23,7 @@ func (m CloudsDaggerModules) Run(
 		return err
 	}
 
-	if err := m.Test(ctx); err != nil {
+	if err := m.Test(ctx, source); err != nil {
 		return err
 	}
 
@@ -53,20 +53,36 @@ func (m CloudsDaggerModules) Lint(
 		return nil
 	}
 
-	if err := run("merge-dirs"); err != nil {
-		return err
-	}
-	if err := run("merge-dirs/tests"); err != nil {
-		return err
+	for _, path := range []string{
+		"pipelines",
+		"merge-dirs",
+		"merge-dirs/tests",
+		"rust",
+		"rust/tests/pipelines",
+	} {
+		if err := run(path); err != nil {
+			return fmt.Errorf("for path '%s': %w", path, err)
+		}
 	}
 
 	return nil
 }
 
 // Run Tests
-func (m *CloudsDaggerModules) Test(ctx context.Context) error {
+func (m *CloudsDaggerModules) Test(
+	ctx context.Context,
+	// +defaultPath="."
+	source *dagger.Directory,
+) error {
 	if err := dag.MergeDirsTests().All(ctx); err != nil {
 		return fmt.Errorf("merge directories tests failed: %w", err)
 	}
+
+	if err := dag.RustTests().Run(ctx, dagger.RustTestsRunOpts{
+		Source: source.Directory("rust/tests"),
+	}); err != nil {
+		return fmt.Errorf("rust tests failed: %w", err)
+	}
+
 	return nil
 }
