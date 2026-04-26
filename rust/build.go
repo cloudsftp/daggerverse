@@ -23,5 +23,5 @@ func (m *Rust) BuildExecutable(
 		WithExec(buildCommand).
 		WithDirectory(resultDir, dag.Directory()).
 		WithExec([]string{"cp", "target/release/" + name, resultDir}).
-		File(resultDir + "/" + name)
+		File(resultDir + "/" + name), nil
 }

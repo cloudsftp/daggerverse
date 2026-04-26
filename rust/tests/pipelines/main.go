@@ -21,6 +21,19 @@ func (m *RustTests) Run(
 	return nil
 }
 
+// Test checkint rust code
+func (m *RustTests) TestCheck(
+	ctx context.Context,
+	// +defaultPath="."
+	source *dagger.Directory,
+) error {
+	if err := dag.Rust().Check(ctx, source); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Test building rust executables
 func (m *RustTests) TestBuild(
 	ctx context.Context,
