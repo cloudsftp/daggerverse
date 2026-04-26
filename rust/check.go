@@ -18,6 +18,8 @@ func (m *Rust) Check(
 
 	if len(pkg) > 0 {
 		checkCommand = append(checkCommand, "-p", pkg)
+	} else {
+		checkCommand = append(checkCommand, "--workspace")
 	}
 
 	if _, err := m.builder(source).

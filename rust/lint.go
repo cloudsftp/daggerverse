@@ -14,11 +14,15 @@ func (m *Rust) Lint(
 	// +optional
 	pkg string,
 ) error {
-	lintCommand := []string{"cargo", "lint"}
+	lintCommand := []string{"cargo", "clippy"}
 
 	if len(pkg) > 0 {
 		lintCommand = append(lintCommand, "-p", pkg)
+	} else {
+		lintCommand = append(lintCommand, "--workspace")
 	}
+
+	lintCommand = append(lintCommand, "--", "-D", "warnings")
 
 	if _, err := m.builder(source).
 		WithExec(lintCommand).
