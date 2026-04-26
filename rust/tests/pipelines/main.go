@@ -34,6 +34,19 @@ func (m *RustTests) TestCheck(
 	return nil
 }
 
+// Test run tests
+func (m *RustTests) TestTest(
+	ctx context.Context,
+	// +defaultPath="."
+	source *dagger.Directory,
+) error {
+	if err := dag.Rust().Test(ctx, source); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Test building rust executables
 func (m *RustTests) TestBuild(
 	ctx context.Context,
