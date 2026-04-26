@@ -39,7 +39,7 @@ func New(
 }
 
 // Returns a cached Rust builder container
-func (m *Rust) builder(source *dagger.Directory) *dagger.Container {
+func (m *Rust) Builder(source *dagger.Directory) *dagger.Container {
 	source = source.WithoutDirectory("target")
 
 	builder := dag.Container().From(fmt.Sprintf("rust:%s-alpine%s", m.RustVersion, m.AlpineVersion))

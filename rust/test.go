@@ -22,7 +22,7 @@ func (m *Rust) Test(
 		testCommand = append(testCommand, "--workspace")
 	}
 
-	if _, err := m.builder(source).
+	if _, err := m.Builder(source).
 		WithExec(testCommand).
 		Sync(ctx); err != nil {
 		return fmt.Errorf("failing tests: %w", err)

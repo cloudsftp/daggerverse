@@ -19,7 +19,7 @@ func (m *Rust) BuildExecutable(
 		"-p", pkg,
 	}
 
-	return m.builder(source).
+	return m.Builder(source).
 		WithExec(buildCommand).
 		WithDirectory(resultDir, dag.Directory()).
 		WithExec([]string{"cp", "target/release/" + pkg, resultDir}).

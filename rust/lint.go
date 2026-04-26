@@ -24,7 +24,7 @@ func (m *Rust) Lint(
 
 	lintCommand = append(lintCommand, "--", "-D", "warnings")
 
-	if _, err := m.builder(source).
+	if _, err := m.Builder(source).
 		WithExec(lintCommand).
 		Sync(ctx); err != nil {
 		return fmt.Errorf("failing lints: %w", err)

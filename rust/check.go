@@ -22,7 +22,7 @@ func (m *Rust) Check(
 		checkCommand = append(checkCommand, "--workspace")
 	}
 
-	if _, err := m.builder(source).
+	if _, err := m.Builder(source).
 		WithExec(checkCommand).
 		Sync(ctx); err != nil {
 		return fmt.Errorf("unsuccessful check of source code: %w", err)
