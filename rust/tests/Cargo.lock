@@ -9,3 +9,7 @@ version = "0.1.0"
 [[package]]
 name = "bin-b"
 version = "0.1.0"
+
+[[package]]
+name = "root"
+version = "0.1.0"

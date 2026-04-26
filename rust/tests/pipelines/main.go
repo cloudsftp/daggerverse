@@ -8,6 +8,7 @@ import (
 
 type RustTests struct{}
 
+// Run all rust tests
 func (m *RustTests) Run(
 	ctx context.Context,
 	// +defaultPath="."
@@ -20,11 +21,16 @@ func (m *RustTests) Run(
 	return nil
 }
 
+// Test building rust executables
 func (m *RustTests) TestBuild(
 	ctx context.Context,
 	// +defaultPath="."
 	source *dagger.Directory,
 ) error {
+	if _, err := dag.Rust().BuildExecutable(source, "root").Sync(ctx); err != nil {
+		return err
+	}
+
 	if _, err := dag.Rust().BuildExecutable(source, "bin-a").Sync(ctx); err != nil {
 		return err
 	}
