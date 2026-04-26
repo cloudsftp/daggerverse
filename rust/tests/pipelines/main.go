@@ -31,6 +31,10 @@ func (m *RustTests) Run(
 		return err
 	}
 
+	if err := m.TestBuildImage(ctx, source); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -125,6 +129,27 @@ func (m *RustTests) TestBuild(
 
 	if _, err := dag.Rust().BuildExecutable(source, "bin-b").Sync(ctx); err == nil {
 		return fmt.Errorf("expected bin-b to fail build, but it succeeded")
+	}
+
+	return nil
+}
+
+// Test building service images
+func (m *RustTests) TestBuildImage(
+	ctx context.Context,
+	// +defaultPath="."
+	source *dagger.Directory,
+) error {
+	if _, err := dag.Rust().BuildImage(source, "root").Sync(ctx); err != nil {
+		return fmt.Errorf("expected root image to build: %w", err)
+	}
+
+	if _, err := dag.Rust().BuildImage(source, "bin-a").Sync(ctx); err != nil {
+		return fmt.Errorf("expected bin-a image to build: %w", err)
+	}
+
+	if _, err := dag.Rust().BuildImage(source, "bin-b").Sync(ctx); err == nil {
+		return fmt.Errorf("expected bin-b image to fail build, but it succeeded")
 	}
 
 	return nil
