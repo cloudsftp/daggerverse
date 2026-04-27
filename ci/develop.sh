@@ -4,7 +4,7 @@ set -e -v
 
 dagger develop
 
-for dir in merge-dirs rust; do
+for dir in merge-dirs rust go; do
     cd "$dir"
     dagger develop
     cd -

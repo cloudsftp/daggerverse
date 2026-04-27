@@ -59,6 +59,9 @@ func (m CloudsDaggerModules) Lint(
 		"merge-dirs/tests",
 		"rust",
 		"rust/tests/pipelines",
+		"go",
+		"go/tests/",
+		"go/tests/data",
 	} {
 		if err := run(path); err != nil {
 			return fmt.Errorf("for path '%s': %w", path, err)
@@ -82,6 +85,12 @@ func (m *CloudsDaggerModules) Test(
 		Source: source.Directory("rust/tests"),
 	}); err != nil {
 		return fmt.Errorf("rust tests failed: %w", err)
+	}
+
+	if err := dag.GoTests().Run(ctx, dagger.GoTestsRunOpts{
+		Source: source.Directory("go/tests/data"),
+	}); err != nil {
+		return fmt.Errorf("go tests failed: %w", err)
 	}
 
 	return nil

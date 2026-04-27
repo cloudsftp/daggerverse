@@ -12,6 +12,10 @@
     {
       "name": "rust-tests",
       "source": "rust/tests"
+    },
+    {
+      "name": "go-tests",
+      "source": "go/tests"
     }
   ],
   "source": "pipelines"
