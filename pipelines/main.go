@@ -57,6 +57,7 @@ func (m CloudsDaggerModules) Lint(
 		"pipelines",
 		"merge-dirs",
 		"merge-dirs/tests",
+		"alpine",
 		"rust",
 		"rust/tests/pipelines",
 		"go",

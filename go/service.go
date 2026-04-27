@@ -3,16 +3,20 @@ package main
 import (
 	"context"
 
-	"dagger/rust/internal/dagger"
+	"dagger/go/internal/dagger"
 )
 
-// Build a service image
-func (m *Rust) BuildImage(
+// Build a go service image
+func (m *Go) BuildImage(
 	ctx context.Context,
+	// +defaultPath="/"
 	source *dagger.Directory,
+	// +default=""
+	path string,
+	// +default="program"
 	pkg string,
 ) *dagger.Container {
-	executable := m.BuildExecutable(source, pkg)
+	executable := m.Compile(source, path)
 
 	a := dag.Alpine()
 	return a.ServiceContainer(executable, dagger.AlpineServiceContainerOpts{

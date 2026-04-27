@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 
 	"dagger/go/internal/dagger"
@@ -36,23 +35,4 @@ func (m *Go) Compile(
 			"go", "build", "-o", name, path,
 		}).
 		File(name)
-}
-
-// Build a service image
-func (m *Go) BuildImage(
-	ctx context.Context,
-	// +defaultPath="/"
-	source *dagger.Directory,
-	// +default=""
-	path string,
-	// +default="program"
-	name string,
-) *dagger.Container {
-	executable := m.Compile(source, path)
-
-	executablePath := "/" + name
-	return dag.Container().
-		From("alpine:"+m.AlpineVersion).
-		WithFile(executablePath, executable).
-		WithEntrypoint([]string{executablePath})
 }
