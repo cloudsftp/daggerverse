@@ -23,14 +23,14 @@ func New(
 	// +default="3.23"
 	alpineVersion string,
 	// +default="2.11"
-	golangciVersion string,
+	golangCiVersion string,
 	// +optional
 	packages []string,
 ) *Go {
 	return &Go{
 		goVersion,
 		alpineVersion,
-		golangciVersion,
+		golangCiVersion,
 		packages,
 	}
 }

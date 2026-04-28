@@ -12,7 +12,7 @@ type GoTests struct{}
 // Run all go tests
 func (m *GoTests) Run(
 	ctx context.Context,
-	// +defaultPath="./data"
+	// +defaultPath="."
 	source *dagger.Directory,
 ) error {
 	if err := m.TestVet(ctx, source); err != nil {
@@ -41,7 +41,7 @@ func (m *GoTests) Run(
 // Test vetting go code
 func (m *GoTests) TestVet(
 	ctx context.Context,
-	// +defaultPath="./data"
+	// +defaultPath="."
 	source *dagger.Directory,
 ) error {
 	if err := dag.Go().Vet(ctx, source); err == nil {
@@ -62,7 +62,7 @@ func (m *GoTests) TestVet(
 // Test linting go code
 func (m *GoTests) TestLint(
 	ctx context.Context,
-	// +defaultPath="./data"
+	// +defaultPath="."
 	source *dagger.Directory,
 ) error {
 	if err := dag.Go().Lint(ctx, source); err == nil {
@@ -83,7 +83,7 @@ func (m *GoTests) TestLint(
 // Test running tests
 func (m *GoTests) TestTest(
 	ctx context.Context,
-	// +defaultPath="./data"
+	// +defaultPath="."
 	source *dagger.Directory,
 ) error {
 	if err := dag.Go().Test(ctx, source); err == nil {
@@ -104,7 +104,7 @@ func (m *GoTests) TestTest(
 // Test building go executables
 func (m *GoTests) TestBuild(
 	ctx context.Context,
-	// +defaultPath="./data"
+	// +defaultPath="."
 	source *dagger.Directory,
 ) error {
 	if _, err := dag.Go().Compile(source, "root").Sync(ctx); err != nil {
@@ -125,7 +125,7 @@ func (m *GoTests) TestBuild(
 // Test building service images
 func (m *GoTests) TestBuildImage(
 	ctx context.Context,
-	// +defaultPath="./data"
+	// +defaultPath="."
 	source *dagger.Directory,
 ) error {
 	if _, err := dag.Go().BuildImage(source, "root").Sync(ctx); err != nil {

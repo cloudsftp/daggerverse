@@ -88,7 +88,7 @@ func (m *CloudsDaggerModules) Test(
 	}
 
 	if err := dag.GoTests().Run(ctx, dagger.GoTestsRunOpts{
-		Source: source.Directory("go/tests/data"),
+		Source: source.Directory("go/tests"),
 	}); err != nil {
 		return fmt.Errorf("go tests failed: %w", err)
 	}
