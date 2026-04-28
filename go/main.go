@@ -1,9 +1,20 @@
 package main
 
+import (
+	"fmt"
+
+	"dagger/go/internal/dagger"
+)
+
 type Go struct {
-	GoVersion       string
-	AlpineVersion   string
+	// Version of go to use
+	GoVersion string
+	// Version of alpine to use
+	AlpineVersion string
+	// Version of golang ci lint to use
 	GolangCiVersion string
+	// Alpine packages to install in addition to pkgconfig and musl-dev
+	Packages []string
 }
 
 func New(
@@ -13,10 +24,36 @@ func New(
 	alpineVersion string,
 	// +default="2.11"
 	golangciVersion string,
+	// +optional
+	packages []string,
 ) *Go {
 	return &Go{
 		goVersion,
 		alpineVersion,
 		golangciVersion,
+		packages,
 	}
+}
+
+// Returns a cached Rust builder container
+func (m *Go) Builder(source *dagger.Directory) *dagger.Container {
+	builder := dag.Container().From(fmt.Sprintf("golang:%s-alpine%s", m.GoVersion, m.AlpineVersion))
+
+	if len(m.Packages) > 0 {
+		builder = builder.WithExec(append(
+			[]string{"apk", "add", "--no-cache"},
+			m.Packages...,
+		))
+	}
+
+	return builder.
+		// Source
+		WithMountedDirectory("/src", source).
+		WithWorkdir("/src").
+
+		// Caches
+		WithMountedCache("/go/pkg/mod", dag.CacheVolume("go-mod")).
+		WithEnvVariable("GOMODCACHE", "/go/pkg/mod").
+		WithMountedCache("/go/build-cache", dag.CacheVolume("go-build")).
+		WithEnvVariable("GOCACHE", "/go/build-cache")
 }

@@ -14,7 +14,7 @@ func (m *Go) Test(
 	// +default="./..."
 	path string,
 ) error {
-	_, err := m.builder(source).
+	_, err := m.Builder(source).
 		WithExec([]string{
 			"go", "test", path,
 		}).
