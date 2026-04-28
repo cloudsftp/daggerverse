@@ -31,10 +31,10 @@ func New(
 	packages = append(packages, "pkgconfig", "musl-dev")
 
 	return &Rust{
-		RustVersion:   rustVersion,
-		AlpineVersion: alpineVersion,
-		Components:    components,
-		Packages:      packages,
+		rustVersion,
+		alpineVersion,
+		components,
+		packages,
 	}
 }
 
