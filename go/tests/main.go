@@ -36,8 +36,7 @@ func (m *GoTests) TestLint(
 	// +defaultPath="./data"
 	source *dagger.Directory,
 ) error {
-	err := dag.Go().
-		Lint(ctx, dagger.GoLintOpts{Source: source})
+	err := dag.Go().Lint(ctx, source)
 	if err != nil {
 		return fmt.Errorf("could not lint: %w", err)
 	}
@@ -51,9 +50,7 @@ func (m *GoTests) TestBuildExecutable(
 	// +defaultPath="./data"
 	source *dagger.Directory,
 ) error {
-	_, err := dag.Go().
-		Compile(dagger.GoCompileOpts{Source: source}).
-		Sync(ctx)
+	_, err := dag.Go().Compile(source).Sync(ctx)
 	if err != nil {
 		return fmt.Errorf("could not build executable: %w", err)
 	}
@@ -67,9 +64,7 @@ func (m *GoTests) TestBuildImage(
 	// +defaultPath="./data"
 	source *dagger.Directory,
 ) error {
-	_, err := dag.Go().
-		BuildImage(dagger.GoBuildImageOpts{Source: source}).
-		Sync(ctx)
+	_, err := dag.Go().BuildImage(source).Sync(ctx)
 	if err != nil {
 		return fmt.Errorf("could not build image: %w", err)
 	}

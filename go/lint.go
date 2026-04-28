@@ -19,7 +19,6 @@ func (m *Go) linter(
 
 func (m *Go) Lint(
 	ctx context.Context,
-	// +defaultPath="/"
 	source *dagger.Directory,
 	// +default="./..."
 	path string,

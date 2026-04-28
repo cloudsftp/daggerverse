@@ -9,7 +9,6 @@ import (
 // Build a go service image
 func (m *Go) BuildImage(
 	ctx context.Context,
-	// +defaultPath="/"
 	source *dagger.Directory,
 	// +default=""
 	path string,

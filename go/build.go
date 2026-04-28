@@ -6,7 +6,6 @@ import (
 
 // Compile executable
 func (m *Go) Compile(
-	// +defaultPath="/"
 	source *dagger.Directory,
 	// +default=""
 	path string,

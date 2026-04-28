@@ -9,7 +9,6 @@ import (
 // Run tests
 func (m *Go) Test(
 	ctx context.Context,
-	// +defaultPath="/"
 	source *dagger.Directory,
 	// +default="./..."
 	path string,
