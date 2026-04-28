@@ -61,8 +61,7 @@ func (m CloudsDaggerModules) Lint(
 		"rust",
 		"rust/tests/pipelines",
 		"go",
-		"go/tests/",
-		"go/tests/data",
+		"go/tests/pipelines",
 	} {
 		if err := run(path); err != nil {
 			return fmt.Errorf("for path '%s': %w", path, err)

@@ -16,7 +16,7 @@ func (m *Go) Test(
 	_, err := m.Builder(source).
 		WithExec([]string{
 			"go", "test",
-			resolvePath(path),
+			resolveRecursivePath(path),
 		}).
 		Sync(ctx)
 

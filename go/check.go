@@ -16,7 +16,7 @@ func (m *Go) Vet(
 	_, err := m.Builder(source).
 		WithExec([]string{
 			"go", "vet",
-			resolvePath(path),
+			resolveRecursivePath(path),
 		}).
 		Sync(ctx)
 

@@ -26,7 +26,7 @@ func (m *Go) Lint(
 	_, err := m.linter(source).
 		WithExec([]string{
 			"golangci-lint", "run",
-			resolvePath(path),
+			resolveRecursivePath(path),
 		}).
 		Sync(ctx)
 
