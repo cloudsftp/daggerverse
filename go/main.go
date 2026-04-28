@@ -13,7 +13,7 @@ type Go struct {
 	AlpineVersion string
 	// Version of golang ci lint to use
 	GolangCiVersion string
-	// Alpine packages to install in addition to pkgconfig and musl-dev
+	// Alpine packages to install
 	Packages []string
 }
 
@@ -35,7 +35,7 @@ func New(
 	}
 }
 
-// Returns a cached Rust builder container
+// Returns a cached go builder container
 func (m *Go) Builder(source *dagger.Directory) *dagger.Container {
 	builder := dag.Container().From(fmt.Sprintf("golang:%s-alpine%s", m.GoVersion, m.AlpineVersion))
 
