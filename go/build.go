@@ -11,11 +11,13 @@ func (m *Go) Compile(
 	// +default=""
 	path string,
 ) *dagger.File {
+	executablePath := "/tmp/" + name
+
 	return m.Builder(source).
 		WithExec([]string{
 			"go", "build",
-			"-o", name,
+			"-o", executablePath,
 			resolvePath(path),
 		}).
-		File(name)
+		File(executablePath)
 }
