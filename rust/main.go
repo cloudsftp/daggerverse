@@ -38,7 +38,7 @@ func New(
 	}
 }
 
-// Returns a cached Rust builder container
+// Returns a cached rust builder container
 func (m *Rust) Builder(source *dagger.Directory) *dagger.Container {
 	source = source.WithoutDirectory("target")
 
