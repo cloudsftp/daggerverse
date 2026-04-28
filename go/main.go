@@ -35,9 +35,15 @@ func New(
 	}
 }
 
+// Returns a bare go builder container
+func (m *Go) Container() *dagger.Container {
+	return dag.Container().
+		From(fmt.Sprintf("golang:%s-alpine%s", m.GoVersion, m.AlpineVersion))
+}
+
 // Returns a cached go builder container
 func (m *Go) Builder(source *dagger.Directory) *dagger.Container {
-	builder := dag.Container().From(fmt.Sprintf("golang:%s-alpine%s", m.GoVersion, m.AlpineVersion))
+	builder := m.Container()
 
 	if len(m.Packages) > 0 {
 		builder = builder.WithExec(append(
