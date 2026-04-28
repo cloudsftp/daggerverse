@@ -13,7 +13,9 @@ func (m *Go) Compile(
 ) *dagger.File {
 	return m.Builder(source).
 		WithExec([]string{
-			"go", "build", "-o", name, path,
+			"go", "build",
+			"-o", name,
+			resolvePath(path),
 		}).
 		File(name)
 }
