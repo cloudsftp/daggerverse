@@ -50,7 +50,7 @@ func (m *GoTests) TestBuildExecutable(
 	// +defaultPath="./data"
 	source *dagger.Directory,
 ) error {
-	_, err := dag.Go().Compile(source).Sync(ctx)
+	_, err := dag.Go().Compile(source, "executable").Sync(ctx)
 	if err != nil {
 		return fmt.Errorf("could not build executable: %w", err)
 	}
@@ -64,7 +64,7 @@ func (m *GoTests) TestBuildImage(
 	// +defaultPath="./data"
 	source *dagger.Directory,
 ) error {
-	_, err := dag.Go().BuildImage(source).Sync(ctx)
+	_, err := dag.Go().BuildImage(source, "executable").Sync(ctx)
 	if err != nil {
 		return fmt.Errorf("could not build image: %w", err)
 	}

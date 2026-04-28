@@ -15,7 +15,5 @@ func (m *Rust) BuildImage(
 	executable := m.BuildExecutable(source, pkg)
 
 	a := dag.Alpine()
-	return a.ServiceContainer(executable, dagger.AlpineServiceContainerOpts{
-		Name: pkg,
-	})
+	return a.ServiceContainer(executable, pkg)
 }

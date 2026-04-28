@@ -7,11 +7,10 @@ import (
 // Compile executable
 func (m *Go) Compile(
 	source *dagger.Directory,
+	name string,
 	// +default=""
 	path string,
 ) *dagger.File {
-	name := "binary"
-
 	return m.Builder(source).
 		WithExec([]string{
 			"go", "build", "-o", name, path,
