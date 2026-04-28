@@ -24,7 +24,10 @@ func (m *Go) Lint(
 	path string,
 ) error {
 	_, err := m.linter(source).
-		WithExec([]string{"golangci-lint", "run", path}).
+		WithExec([]string{
+			"golangci-lint", "run",
+			resolvePath(path),
+		}).
 		Sync(ctx)
 
 	return err

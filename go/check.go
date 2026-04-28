@@ -6,8 +6,8 @@ import (
 	"dagger/go/internal/dagger"
 )
 
-// Run tests
-func (m *Go) Test(
+// Check the rust code
+func (m *Go) Vet(
 	ctx context.Context,
 	source *dagger.Directory,
 	// +default="./..."
@@ -15,7 +15,7 @@ func (m *Go) Test(
 ) error {
 	_, err := m.Builder(source).
 		WithExec([]string{
-			"go", "test",
+			"go", "vet",
 			resolvePath(path),
 		}).
 		Sync(ctx)
