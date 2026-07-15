@@ -38,11 +38,16 @@ func New(
 	}
 }
 
+// Returns a bare rust builder container
+func (m *Rust) Container() *dagger.Container {
+	return dag.Container().From(fmt.Sprintf("rust:%s-alpine%s", m.RustVersion, m.AlpineVersion))
+}
+
 // Returns a cached rust builder container
 func (m *Rust) Builder(source *dagger.Directory) *dagger.Container {
 	source = source.WithoutDirectory("target")
 
-	builder := dag.Container().From(fmt.Sprintf("rust:%s-alpine%s", m.RustVersion, m.AlpineVersion))
+	builder := m.Container()
 
 	if len(m.Packages) > 0 {
 		builder = builder.WithExec(append(

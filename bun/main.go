@@ -25,9 +25,14 @@ func New(
 	}
 }
 
+// Returns a bare bun builder container
+func (m *Bun) Container() *dagger.Container {
+	return dag.Container().From(fmt.Sprintf("oven/bun:%s-alpine", m.BunVersion))
+}
+
 // Returns a bun builder container
 func (m *Bun) Builder(source *dagger.Directory) *dagger.Container {
-	builder := dag.Container().From(fmt.Sprintf("oven/bun:%s-alpine", m.BunVersion))
+	builder := m.Container()
 
 	if len(m.Packages) > 0 {
 		builder = builder.WithExec(append(
