@@ -13,7 +13,7 @@ type Alpine struct {
 }
 
 func New(
-	// +default="3.23"
+	// +default="3.24"
 	alpineVersion string,
 ) *Alpine {
 	return &Alpine{

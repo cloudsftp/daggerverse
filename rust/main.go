@@ -18,9 +18,9 @@ type Rust struct {
 }
 
 func New(
-	// +default="1.95"
+	// +default="1.97"
 	rustVersion string,
-	// +default="3.23"
+	// +default="3.24"
 	alpineVersion string,
 	// +optional
 	components []string,

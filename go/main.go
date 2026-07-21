@@ -20,10 +20,10 @@ type Go struct {
 func New(
 	// +default="1.26"
 	goVersion string,
-	// +default="3.23"
-	alpineVersion string,
-	// +default="2.11"
+	// +default="2.12"
 	golangCiVersion string,
+	// +default="3.24"
+	alpineVersion string,
 	// +optional
 	packages []string,
 ) *Go {
