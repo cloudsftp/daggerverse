@@ -4,7 +4,9 @@ set -e -v
 
 dagger develop
 
-for dir in merge-dirs alpine rust go bun git-pages; do
+for dir in \
+    merge-dirs alpine rust go bun git-pages ssh \
+; do
     cd "$dir"
     dagger develop
     cd -

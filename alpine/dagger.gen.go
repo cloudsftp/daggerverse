@@ -62,20 +62,24 @@ func convertSlice[I any, O any](in []I, f func(I) O) []O {
 func (r Alpine) MarshalJSON() ([]byte, error) {
 	var concrete struct {
 		AlpineVersion string
+		Packages      []string
 	}
 	concrete.AlpineVersion = r.AlpineVersion
+	concrete.Packages = r.Packages
 	return json.Marshal(&concrete)
 }
 
 func (r *Alpine) UnmarshalJSON(bs []byte) error {
 	var concrete struct {
 		AlpineVersion string
+		Packages      []string
 	}
 	err := json.Unmarshal(bs, &concrete)
 	if err != nil {
 		return err
 	}
 	r.AlpineVersion = concrete.AlpineVersion
+	r.Packages = concrete.Packages
 	return nil
 }
 
@@ -198,6 +202,13 @@ func invoke(ctx context.Context, parentJSON []byte, parentName string, fnName st
 	switch parentName {
 	case "Alpine":
 		switch fnName {
+		case "Container":
+			var parent Alpine
+			err = json.Unmarshal(parentJSON, &parent)
+			if err != nil {
+				panic(fmt.Errorf("%s: %w", "failed to unmarshal parent object", err))
+			}
+			return (*Alpine).Container(&parent), nil
 		case "ServiceContainer":
 			var parent Alpine
 			err = json.Unmarshal(parentJSON, &parent)
@@ -232,7 +243,14 @@ func invoke(ctx context.Context, parentJSON []byte, parentName string, fnName st
 					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg alpineVersion", err))
 				}
 			}
-			return New(alpineVersion), nil
+			var packages []string
+			if inputArgs["packages"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["packages"]), &packages)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg packages", err))
+				}
+			}
+			return New(alpineVersion, packages), nil
 		default:
 			return nil, fmt.Errorf("unknown function %s", fnName)
 		}

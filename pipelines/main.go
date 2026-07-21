@@ -64,6 +64,7 @@ func (m CloudsDaggerModules) Lint(
 		"go/tests/pipelines",
 		"bun",
 		"git-pages",
+		"ssh",
 	} {
 		if err := run(path); err != nil {
 			return fmt.Errorf("for path '%s': %w", path, err)
