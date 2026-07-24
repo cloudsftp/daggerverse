@@ -3,8 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"dagger/forgejo-release/internal/dagger"
+)
+
+const (
+	fjImage  = "codeberg.org/forgejo-contrib/forgejo-cli"
+	fjDigest = "sha256:309b8759b7107a0da2b76b9b9be77c87464f9be9d4d1b6b4d1f9e22ba1145598" // v0.6.0
 )
 
 type Fj struct {
@@ -13,47 +19,24 @@ type Fj struct {
 	// +private
 	Token *dagger.Secret
 
-	// Forgejo repository (e.g. "owner/repo").
-	//
-	// +private
-	Repository string
-
 	// Forgejo host.
 	//
 	// +private
 	Host string
-
-	// Forgejo repository source (with .git directory).
-	Source *dagger.Directory
 }
 
 func New(
-	// GitHub token.
-	//
-	// +optional
+	// Forgejo token.
 	token *dagger.Secret,
 
-	// GitHub repository (e.g. "owner/repo").
-	//
-	// +optional
-	repo string,
-
-	// GitHub host.
+	// Forgejo host.
 	//
 	// +optional
 	host string,
-
-	// Git repository source (with .git directory).
-	//
-	// +optional
-	source *dagger.Directory,
 ) *Fj {
 	return &Fj{
-		Token:      token,
-		Repository: repo,
-		Host:       host,
-		// CACert:     caCert,
-		Source: source,
+		Token: token,
+		Host:  host,
 	}
 }
 
@@ -64,19 +47,15 @@ func (m *Fj) Exec(
 	// Arguments to pass to Forgejo CLI.
 	args []string,
 ) (*dagger.Container, error) {
-	args = append([]string{"gh"}, args...)
+	args = append([]string{"fj"}, args...)
 
-	ctr, err := m.container(ctx)
+	c, err := m.Container(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not get conainer: %w", err)
 	}
 
-	return ctr.WithExec(args).Sync(ctx)
+	return c.WithExec(args).Sync(ctx)
 }
-
-const (
-	fjImage = "codeberg.org/forgejo-contrib/forgejo-cli:latest"
-)
 
 func (m *Fj) host() string {
 	if m.Host != "" {
@@ -85,122 +64,26 @@ func (m *Fj) host() string {
 	return "codeberg.org"
 }
 
-func (m *Fj) container(
+func (m *Fj) Container(
 	ctx context.Context,
 ) (*dagger.Container, error) {
 	host := m.host()
-	ctr := dag.
+	c := dag.
 		Container().
-		From(fjImage)
+		From(fjImage + "@" + fjDigest)
 
 	token, err := m.Token.Plaintext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not get token: %w", err)
 	}
 
-	return ctr.
+	return c.
 		WithExec([]string{
 			"fj", "--host", host,
 			"auth", "add-token",
 		}, dagger.ContainerWithExecOpts{
 			Stdin: token,
 		}).
-		With(func(c *dagger.Container) *dagger.Container {
-			if m.Source != nil {
-				c = c.
-					WithWorkdir("/work/repo").
-					WithMountedDirectory("/work/repo", m.Source)
-			}
-
-			return c
-		}).Sync(ctx)
-}
-
-func (m *Fj) Fj(
-	ctx context.Context,
-) (*dagger.Container, error) {
-	return m.container(ctx)
-}
-
-// Create forgejo release
-func (m *Fj) CreateRelease(
-	ctx context.Context,
-	tag string,
-	// +optional
-	assets *dagger.Directory,
-) error {
-	c, err := m.Fj(ctx)
-	if err != nil {
-		return err
-	}
-
-	_, err = c.
-		WithExec([]string{"fj", "release"}).
+		WithEnvVariable("CACHE_BUSTER", time.Now().Format(time.RFC3339Nano)).
 		Sync(ctx)
-
-	return err
 }
-
-/*
-func (m *ForgejoRelease) CreateRelease(
-	ctx context.Context,
-	tag string,
-	// +optional
-	assets *dagger.Directory,
-) error {
-	title := tag
-
-	err := dag.Gh(dagger.GhOpts{
-		Token: m.Token,
-		Repo:  m.Repository,
-		Host:  m.Forge,
-	}).
-		Release().
-		Create(ctx, tag, title)
-
-	return err
-}
-*/
-
-/*
-func (m *ForgejoRelease) CreateRelease(
-	ctx context.Context,
-	tag string,
-	// +optional
-	assets *dagger.Directory,
-) error {
-	c := dag.Alpine(dagger.AlpineOpts{
-		AlpineVersion: m.AlpineVersion,
-		Packages:      []string{"curl"},
-	}).Container()
-
-	apiEndpoint := m.Forge + "/api/v1/"
-	method := "POST"
-	path := "repos/" + m.Repository + "/releases"
-
-	tokenPlain, err := m.Token.Plaintext(ctx)
-	if err != nil {
-		return err
-	}
-
-	payloadContent := map[string]string{
-		"tag_name": tag,
-	}
-	payload, err := json.Marshal(payloadContent)
-	if err != nil {
-		return fmt.Errorf("could not encode payload content: %w", err)
-	}
-
-	_, err = c.
-		WithExec([]string{
-			"curl", "--retry", "5", "--fail",
-			"-X", method, "-sS", "-H", "Authorization: token " + tokenPlain,
-			"-H", "Content-Type: application/json",
-			"-d", string(payload),
-			apiEndpoint + path,
-		}).
-		Sync(ctx)
-
-	return err
-}
-*/
