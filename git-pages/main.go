@@ -36,7 +36,6 @@ func (m *GitPages) Deploy(
 
 	_, err = g.
 		WithDirectory("/dist", dist).
-		WithSecretVariable("TOKEN", token).
 		WithExec([]string{
 			"git-pages-cli",
 			site,
