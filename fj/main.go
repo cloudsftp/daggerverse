@@ -8,12 +8,12 @@ import (
 	"dagger/forgejo-release/internal/dagger"
 )
 
-const (
-	fjImage  = "codeberg.org/forgejo-contrib/forgejo-cli"
-	fjDigest = "sha256:309b8759b7107a0da2b76b9b9be77c87464f9be9d4d1b6b4d1f9e22ba1145598" // v0.6.0
-)
-
 type Fj struct {
+	// Forgejo CLI Version.
+	//
+	// +private
+	Version string
+
 	// Forgejo token.
 	//
 	// +private
@@ -26,6 +26,11 @@ type Fj struct {
 }
 
 func New(
+	// Forgejo CLI version.
+	//
+	// +default="0.6.0"
+	version string,
+
 	// Forgejo token.
 	token *dagger.Secret,
 
@@ -35,8 +40,9 @@ func New(
 	host string,
 ) *Fj {
 	return &Fj{
-		Token: token,
-		Host:  host,
+		Version: version,
+		Token:   token,
+		Host:    host,
 	}
 }
 
@@ -70,7 +76,7 @@ func (m *Fj) Container(
 	host := m.host()
 	c := dag.
 		Container().
-		From(fjImage + "@" + fjDigest)
+		From("codeberg.org/forgejo-contrib/forgejo-cli:" + m.Version)
 
 	token, err := m.Token.Plaintext(ctx)
 	if err != nil {
