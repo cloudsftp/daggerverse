@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strings"
+
 	"dagger/go/internal/dagger"
 )
 
@@ -10,14 +12,36 @@ func (m *Go) Compile(
 	name string,
 	// +default=""
 	path string,
+	// +optional
+	tags []string,
+	// +optional
+	ldflags string,
 ) *dagger.File {
 	executablePath := "/tmp/" + name
 
+	args := []string{
+		"go", "build",
+	}
+
+	if len(tags) > 0 {
+		args = append(
+			args,
+			"-tags",
+			strings.Join(tags, " "),
+		)
+	}
+
+	if ldflags != "" {
+		args = append(args, "-ldflags", ldflags)
+	}
+
+	args = append(
+		args,
+		"-o", executablePath,
+		resolvePath(path),
+	)
+
 	return m.Builder(source).
-		WithExec([]string{
-			"go", "build",
-			"-o", executablePath,
-			resolvePath(path),
-		}).
+		WithExec(args).
 		File(executablePath)
 }
