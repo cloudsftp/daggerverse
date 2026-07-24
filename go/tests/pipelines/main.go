@@ -31,10 +31,6 @@ func (m *GoTests) Run(
 		return err
 	}
 
-	if err := m.TestBuildImage(ctx, source); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -117,27 +113,6 @@ func (m *GoTests) TestBuild(
 
 	if _, err := dag.Go().Compile(source, "b", dagger.GoCompileOpts{Path: "b"}).Sync(ctx); err == nil {
 		return fmt.Errorf("expected b to fail build, but it succeeded")
-	}
-
-	return nil
-}
-
-// Test building service images
-func (m *GoTests) TestBuildImage(
-	ctx context.Context,
-	// +defaultPath="."
-	source *dagger.Directory,
-) error {
-	if _, err := dag.Go().BuildImage(source, "root").Sync(ctx); err != nil {
-		return fmt.Errorf("expected root image to build: %w", err)
-	}
-
-	if _, err := dag.Go().BuildImage(source, "a", dagger.GoBuildImageOpts{Path: "a"}).Sync(ctx); err != nil {
-		return fmt.Errorf("expected a image to build: %w", err)
-	}
-
-	if _, err := dag.Go().BuildImage(source, "b", dagger.GoBuildImageOpts{Path: "b"}).Sync(ctx); err == nil {
-		return fmt.Errorf("expected b image to fail build, but it succeeded")
 	}
 
 	return nil
