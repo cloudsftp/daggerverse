@@ -12,6 +12,10 @@ func (m *Go) Compile(
 	name string,
 	// +default=""
 	path string,
+	// +default="linux"
+	os string,
+	// +default="amd64"
+	arch string,
 	// +optional
 	tags []string,
 	// +optional
@@ -42,6 +46,8 @@ func (m *Go) Compile(
 	)
 
 	return m.Builder(source).
+		WithEnvVariable("GOOS", os).
+		WithEnvVariable("GOARCH", arch).
 		WithExec(args).
 		File(executablePath)
 }
