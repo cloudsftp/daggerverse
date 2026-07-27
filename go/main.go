@@ -15,6 +15,8 @@ type Go struct {
 	GolangCiVersion string
 	// Alpine packages to install
 	Packages []string
+	// Go flags
+	GoFlags string
 }
 
 func New(
@@ -26,12 +28,15 @@ func New(
 	alpineVersion string,
 	// +optional
 	packages []string,
+	// +optional
+	goFlags string,
 ) *Go {
 	return &Go{
 		goVersion,
 		alpineVersion,
 		golangCiVersion,
 		packages,
+		goFlags,
 	}
 }
 
@@ -45,6 +50,10 @@ func (m *Go) Container() *dagger.Container {
 			[]string{"apk", "add", "--no-cache"},
 			m.Packages...,
 		))
+	}
+
+	if m.GoFlags != "" {
+		c = c.WithEnvVariable("GOFLAGS", m.GoFlags)
 	}
 
 	return c
