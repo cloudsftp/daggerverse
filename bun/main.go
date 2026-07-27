@@ -27,21 +27,22 @@ func New(
 
 // Returns a bare bun builder container
 func (m *Bun) Container() *dagger.Container {
-	return dag.Container().From(fmt.Sprintf("oven/bun:%s-alpine", m.BunVersion))
-}
-
-// Returns a bun builder container
-func (m *Bun) Builder(source *dagger.Directory) *dagger.Container {
-	builder := m.Container()
+	c := dag.Container().
+		From(fmt.Sprintf("oven/bun:%s-alpine", m.BunVersion))
 
 	if len(m.Packages) > 0 {
-		builder = builder.WithExec(append(
+		c = c.WithExec(append(
 			[]string{"apk", "add", "--no-cache"},
 			m.Packages...,
 		))
 	}
 
-	return builder.
+	return c
+}
+
+// Returns a bun builder container
+func (m *Bun) Builder(source *dagger.Directory) *dagger.Container {
+	return m.Container().
 		// Source
 		WithMountedDirectory("/src", source).
 		WithWorkdir("/src")

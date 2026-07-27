@@ -40,31 +40,31 @@ func New(
 
 // Returns a bare rust builder container
 func (m *Rust) Container() *dagger.Container {
-	return dag.Container().From(fmt.Sprintf("rust:%s-alpine%s", m.RustVersion, m.AlpineVersion))
-}
-
-// Returns a cached rust builder container
-func (m *Rust) Builder(source *dagger.Directory) *dagger.Container {
-	source = source.WithoutDirectory("target")
-
-	builder := m.Container()
+	c := dag.Container().
+		From(fmt.Sprintf("rust:%s-alpine%s", m.RustVersion, m.AlpineVersion))
 
 	if len(m.Packages) > 0 {
-		builder = builder.WithExec(append(
+		c = c.WithExec(append(
 			[]string{"apk", "add", "--no-cache"},
 			m.Packages...,
 		))
 	}
 
 	if len(m.Components) > 0 {
-		builder = builder.WithExec(append(
+		c = c.WithExec(append(
 			[]string{"rustup", "component", "add"},
 			m.Components...,
 		))
-
 	}
 
-	builder = builder.
+	return c
+}
+
+// Returns a cached rust builder container
+func (m *Rust) Builder(source *dagger.Directory) *dagger.Container {
+	source = source.WithoutDirectory("target")
+
+	return m.Container().
 		// Source
 		WithDirectory("/src", source).
 		WithWorkdir("/src").
@@ -73,6 +73,4 @@ func (m *Rust) Builder(source *dagger.Directory) *dagger.Container {
 		WithMountedCache("/cache/cargo", dag.CacheVolume("rust-packages")).
 		WithEnvVariable("CARGO_HOME", "/cache/cargo").
 		WithMountedCache("/src/target", dag.CacheVolume("rust-target"))
-
-	return builder
 }
