@@ -65,6 +65,7 @@ func (m CloudsDaggerModules) Lint(
 		"bun",
 		"git-pages",
 		"ssh",
+		"renovate",
 	} {
 		if err := run(path); err != nil {
 			return fmt.Errorf("for path '%s': %w", path, err)
