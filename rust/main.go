@@ -15,6 +15,8 @@ type Rust struct {
 	Components []string
 	// Rust targets to install
 	Targets []string
+	// Rust crates to install in addition to cargo-zigbuild
+	Crates []string
 	// Alpine packages to install in addition to pkgconfig and musl-dev
 	Packages []string
 }
@@ -29,16 +31,20 @@ func New(
 	// +optional
 	targets []string,
 	// +optional
+	crates []string,
+	// +optional
 	packages []string,
 ) *Rust {
 	components = append(components, "rustfmt", "clippy")
 	packages = append(packages, "pkgconfig", "musl-dev")
+	crates = append(crates, "cargo-zigbuild")
 
 	return &Rust{
 		rustVersion,
 		alpineVersion,
 		components,
 		targets,
+		crates,
 		packages,
 	}
 }
@@ -55,6 +61,13 @@ func (m *Rust) Container() *dagger.Container {
 		))
 	}
 
+	if len(m.Components) > 0 {
+		c = c.WithExec(append(
+			[]string{"rustup", "component", "add"},
+			m.Components...,
+		))
+	}
+
 	if len(m.Targets) > 0 {
 		c = c.WithExec(append(
 			[]string{"rustup", "target", "add"},
@@ -62,10 +75,10 @@ func (m *Rust) Container() *dagger.Container {
 		))
 	}
 
-	if len(m.Components) > 0 {
+	if len(m.Crates) > 0 {
 		c = c.WithExec(append(
-			[]string{"rustup", "component", "add"},
-			m.Components...,
+			[]string{"cargo", "install"},
+			m.Crates...,
 		))
 	}
 
