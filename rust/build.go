@@ -10,10 +10,16 @@ const resultDir = "/result"
 func (m *Rust) BuildExecutable(
 	source *dagger.Directory,
 	pkg string,
+	// +optional
+	target string,
 ) *dagger.File {
 	buildCommand := []string{
 		"cargo", "build", "--release",
 		"-p", pkg,
+	}
+
+	if target != "" {
+		buildCommand = append(buildCommand, "--target", target)
 	}
 
 	return m.Builder(source).
