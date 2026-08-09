@@ -43,11 +43,19 @@ func (m *Alpine) Container() *dagger.Container {
 func (m *Alpine) ServiceContainer(
 	executable *dagger.File,
 	name string,
+	// +optional
+	platform string,
 ) *dagger.Container {
 	executablePath := "/" + name
 
-	return dag.Container().
+	opts := dagger.ContainerOpts{}
+	if platform != "" {
+		opts.Platform = dagger.Platform(platform)
+	}
+
+	return dag.Container(opts).
 		From("alpine:"+m.AlpineVersion).
+		WithLabel("", "").
 		WithExec([]string{"adduser", user, "-D"}).
 		WithUser(user).
 		WithFile(executablePath, executable).
