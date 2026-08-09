@@ -17,7 +17,7 @@ type Rust struct {
 	Targets []string
 	// Rust crates to install in addition to cargo-zigbuild
 	Crates []string
-	// Alpine packages to install in addition to pkgconfig and musl-dev
+	// Alpine packages to install in addition to pkgconfig, musl-dev, and zig
 	Packages []string
 }
 
@@ -36,7 +36,7 @@ func New(
 	packages []string,
 ) *Rust {
 	components = append(components, "rustfmt", "clippy")
-	packages = append(packages, "pkgconfig", "musl-dev")
+	packages = append(packages, "pkgconfig", "musl-dev", "zig")
 	crates = append(crates, "cargo-zigbuild")
 
 	return &Rust{
