@@ -13,6 +13,8 @@ type Rust struct {
 	AlpineVersion string
 	// Rust components to install in addition to rustfmt and clippy
 	Components []string
+	// Rust targets to install
+	Targets []string
 	// Alpine packages to install in addition to pkgconfig and musl-dev
 	Packages []string
 }
@@ -25,6 +27,8 @@ func New(
 	// +optional
 	components []string,
 	// +optional
+	targets []string,
+	// +optional
 	packages []string,
 ) *Rust {
 	components = append(components, "rustfmt", "clippy")
@@ -34,6 +38,7 @@ func New(
 		rustVersion,
 		alpineVersion,
 		components,
+		targets,
 		packages,
 	}
 }
@@ -47,6 +52,13 @@ func (m *Rust) Container() *dagger.Container {
 		c = c.WithExec(append(
 			[]string{"apk", "add", "--no-cache"},
 			m.Packages...,
+		))
+	}
+
+	if len(m.Targets) > 0 {
+		c = c.WithExec(append(
+			[]string{"rustup", "target", "add"},
+			m.Targets...,
 		))
 	}
 
