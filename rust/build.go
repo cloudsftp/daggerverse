@@ -27,13 +27,16 @@ func (m *Rust) BuildExecutable(
 		"-p", pkg,
 	}
 
+	targetBinaryPath := "target/"
 	if target != "" {
 		buildCommand = append(buildCommand, "--target", target)
+		targetBinaryPath += target + "/"
 	}
+	targetBinaryPath += "release/" + pkg
 
 	return m.Builder(source).
 		WithExec(buildCommand).
 		WithDirectory(resultDir, dag.Directory()).
-		WithExec([]string{"cp", "target/release/" + pkg, resultDir}).
+		WithExec([]string{"cp", targetBinaryPath, resultDir}).
 		File(resultDir + "/" + pkg)
 }
