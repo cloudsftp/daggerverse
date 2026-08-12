@@ -2,64 +2,63 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"time"
 
 	"dagger/renovate/internal/dagger"
 )
 
 type Renovate struct {
-	Version      string
-	Platform     string
-	Endpoint     string
-	Repositories []string
-	ForgeToken   *dagger.Secret
-	GithubToken  *dagger.Secret
+	AlpineVersion string
+	Languages     []string
+	Platform      string
+	Endpoint      string
 }
 
 func New(
-	// +default="43.278"
-	version string,
+	// +default=""
+	alpineVersion string,
+	// +optional
+	languages []string,
 	// +default="forgejo"
 	platform string,
 	// +default="https://codeberg.org/api/v1/"
 	endpoint string,
-	repositories []string,
-	forgeToken,
-	githubToken *dagger.Secret,
 ) *Renovate {
 	return &Renovate{
-		version,
+		alpineVersion,
+		languages,
 		platform,
 		endpoint,
-		repositories,
-		forgeToken,
-		githubToken,
 	}
 }
 
 func (m *Renovate) Run(
 	ctx context.Context,
+	// +default=false
+	debugLog bool,
+	repositories []string,
+	renovateToken,
+	githubComToken *dagger.Secret,
 ) (string, error) {
-	config := `
-		module.exports = {
-		  "repositories": [`
-
-	for _, repo := range m.Repositories {
-		config += fmt.Sprintf(`"%s", `, repo)
-	}
-
-	config += `]
-		}`
-
-	return dag.Container().
-		From("renovate/renovate:"+m.Version).
-		WithNewFile("config.js", config).
-		WithSecretVariable("RENOVATE_TOKEN", m.ForgeToken).
-		WithSecretVariable("GITHUB_COM_TOKEN", m.GithubToken).
-		WithExec([]string{
-			"renovate",
+	cmd := append(
+		[]string{
+			"npx", "renovate",
 			"--platform", m.Platform,
 			"--endpoint", m.Endpoint,
-		}).
+		},
+		repositories...,
+	)
+
+	c := m.Container(ctx).
+		WithSecretVariable("RENOVATE_TOKEN", renovateToken).
+		WithSecretVariable("GITHUB_COM_TOKEN", githubComToken)
+
+	if debugLog {
+		c = c.WithEnvVariable("LOG_LEVEL", "debug")
+	}
+
+	return c.
+		WithEnvVariable("CACHE_BUSTER", time.Now().Format(time.RFC3339Nano)).
+		WithExec(cmd).
 		Stdout(ctx)
 }
