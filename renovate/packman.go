@@ -19,6 +19,8 @@ func (m *Renovate) Container(ctx context.Context) (*dagger.Container, error) {
 			packages = append(packages, "cargo")
 		case "go":
 			packages = append(packages, "go")
+		case "uv":
+			packages = append(packages, "uv")
 		case "bun":
 			installationSteps = append(installationSteps,
 				func(c *dagger.Container) *dagger.Container {
