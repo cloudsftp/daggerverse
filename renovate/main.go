@@ -49,7 +49,12 @@ func (m *Renovate) Run(
 		repositories...,
 	)
 
-	c := m.Container(ctx).
+	c, err := m.Container(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	c = c.
 		WithSecretVariable("RENOVATE_TOKEN", renovateToken).
 		WithSecretVariable("GITHUB_COM_TOKEN", githubComToken)
 
