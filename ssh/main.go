@@ -63,6 +63,7 @@ func (m *Ssh) Run(
 	command string,
 ) error {
 	_, err := m.container().
+		WithEnvVariable("CACHE_BUSTER", time.Now().Format(time.RFC3339Nano)).
 		WithExec([]string{
 			"sh", "-c",
 			fmt.Sprintf(
