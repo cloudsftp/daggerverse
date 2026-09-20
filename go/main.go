@@ -6,6 +6,10 @@ import (
 	"dagger/go/internal/dagger"
 )
 
+const (
+	SourcePath = "/src"
+)
+
 type Go struct {
 	// Version of go to use
 	GoVersion string
@@ -63,8 +67,8 @@ func (m *Go) Container() *dagger.Container {
 func (m *Go) Builder(source *dagger.Directory) *dagger.Container {
 	return m.Container().
 		// Source
-		WithMountedDirectory("/src", source).
-		WithWorkdir("/src").
+		WithMountedDirectory(SourcePath, source).
+		WithWorkdir(SourcePath).
 
 		// Caches
 		WithMountedCache("/go/pkg/mod", dag.CacheVolume("go-mod")).
