@@ -32,6 +32,7 @@ func New(
 	}
 }
 
+// +cache="never"
 func (m *Renovate) Run(
 	ctx context.Context,
 	// +default=false
